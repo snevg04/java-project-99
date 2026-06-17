@@ -18,18 +18,22 @@ java {
 
 repositories {
 	mavenCentral()
-	maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("jakarta.validation:jakarta.validation-api:4.0.0-M1")
+    implementation("net.datafaker:datafaker:2.0.1")
+    implementation("org.instancio:instancio-junit:3.3.0")
     compileOnly("org.projectlombok:lombok:1.18.46")
     annotationProcessor("org.projectlombok:lombok:1.18.46")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
