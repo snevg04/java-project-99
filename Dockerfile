@@ -6,4 +6,4 @@ COPY . .
 
 RUN ["./gradlew", "clean", "build"]
 
-CMD ["./gradlew", "run"]
+CMD ["./gradlew", "bootRun"]
