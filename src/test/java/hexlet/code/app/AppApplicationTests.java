@@ -1,5 +1,6 @@
 package hexlet.code.app;
 
+import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import net.datafaker.Faker;
@@ -9,8 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.HashMap;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -74,7 +76,8 @@ class AppApplicationTests {
                 json -> json.node("password").isAbsent()
         );
 
-        var user = userRepository.findByEmail(payload.getEmail()).orElseThrow();
+        var user = userRepository.findById(payload.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
         assertThat(user.getFirstName()).isEqualTo(payload.getFirstName());
         assertThat(user.getLastName()).isEqualTo(payload.getLastName());
         assertThat(user.getEmail()).isEqualTo(payload.getEmail());
@@ -82,20 +85,86 @@ class AppApplicationTests {
 
     @Test
     public void testShow() throws Exception {
-        mockMvc.perform(get("/api/users/{id}"))
-                .andExpect(status().isOk());
+
+        var user = Instancio.of(User.class)
+                .ignore(Select.field(User::getId))
+                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
+                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
+                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
+                .supply(Select.field(User::getPassword), () -> faker.internet().password())
+                .create();
+
+        var savedUser = userRepository.save(user);
+        var userId = savedUser.getId();
+
+        var result = mockMvc.perform(get("/api/users/" + userId))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("id").isEqualTo(userId),
+                json -> json.node("firstName").isEqualTo(savedUser.getFirstName()),
+                json -> json.node("lastName").isEqualTo(savedUser.getLastName()),
+                json -> json.node("email").isEqualTo(savedUser.getEmail()),
+                json -> json.node("password").isAbsent(),
+                json -> json.node("createdAt").isPresent()
+        );
     }
 
     @Test
     public void testUpdate() throws Exception {
-        mockMvc.perform(get("/api/users/{id}"))
-                .andExpect(status().isOk());
+
+        var user = Instancio.of(User.class)
+                .ignore(Select.field(User::getId))
+                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
+                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
+                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
+                .supply(Select.field(User::getPassword), () -> faker.internet().password())
+                .create();
+
+        var savedUser = userRepository.save(user);
+        var userId = savedUser.getId();
+
+        var payload = new HashMap<String, Object>();
+        payload.put("email", faker.internet().emailAddress());
+
+        var result = mockMvc.perform(put("/api/users/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("id").isEqualTo(savedUser.getId()),
+                json -> json.node("email").isEqualTo(payload.get("email")),
+                json -> json.node("password").isAbsent()
+        );
+
+        var updatedUser = userRepository.findById(savedUser.getId()).orElseThrow();
+
+        assertThat(updatedUser.getEmail()).isEqualTo(payload.get("email"));
+        assertThat(updatedUser.getFirstName()).isEqualTo(savedUser.getFirstName());
+        assertThat(updatedUser.getLastName()).isEqualTo(savedUser.getLastName());
     }
 
     @Test
     public void testDelete() throws Exception {
-        mockMvc.perform(get("/api/users/{id}"))
+
+        var user = Instancio.of(User.class)
+                .ignore(Select.field(User::getId))
+                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
+                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
+                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
+                .supply(Select.field(User::getPassword), () -> faker.internet().password())
+                .create();
+
+        var savedUser = userRepository.save(user);
+        var id = savedUser.getId();
+
+        mockMvc.perform(delete("/api/users/" + id))
                 .andExpect(status().isNoContent());
+
+        assertThat(userRepository.findById(id)).isEmpty();
     }
 
 }
