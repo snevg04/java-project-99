@@ -4,6 +4,7 @@ import hexlet.code.app.dto.UserCreateDTO;
 import hexlet.code.app.dto.UserDTO;
 import hexlet.code.app.dto.UserUpdateDTO;
 import hexlet.code.app.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +32,13 @@ public class UserController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDTO create(@RequestBody UserCreateDTO userCreateDTO) {
+    public UserDTO create(@Valid @RequestBody UserCreateDTO userCreateDTO) {
         return userService.createUser(userCreateDTO);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDTO update(@RequestBody UserUpdateDTO userUpdateDTO, @PathVariable Long id) {
+    public UserDTO update(@Valid @RequestBody UserUpdateDTO userUpdateDTO, @PathVariable Long id) {
         return userService.updateUser(userUpdateDTO, id);
     }
 
