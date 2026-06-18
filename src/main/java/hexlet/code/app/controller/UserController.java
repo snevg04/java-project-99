@@ -1,0 +1,50 @@
+package hexlet.code.app.controller;
+
+import hexlet.code.app.dto.UserCreateDTO;
+import hexlet.code.app.dto.UserDTO;
+import hexlet.code.app.dto.UserUpdateDTO;
+import hexlet.code.app.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDTO> index() {
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDTO show(@PathVariable Long id) {
+        return userService.showUser(id);
+    }
+
+    @PostMapping("")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDTO create(@RequestBody UserCreateDTO userCreateDTO) {
+        return userService.createUser(userCreateDTO);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDTO update(@RequestBody UserUpdateDTO userUpdateDTO, @PathVariable Long id) {
+        return userService.updateUser(userUpdateDTO, id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
+
+}
