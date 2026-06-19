@@ -68,6 +68,8 @@ class AppApplicationTests {
                 .andExpect(status().isCreated())
                 .andReturn();
 
+        var id = om.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+
         assertThatJson(result.getResponse().getContentAsString()).and(
                 json -> json.node("id").isPresent(),
                 json -> json.node("firstName").isEqualTo(payload.getFirstName()),
@@ -76,7 +78,7 @@ class AppApplicationTests {
                 json -> json.node("password").isAbsent()
         );
 
-        var user = userRepository.findById(payload.getId())
+        var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
         assertThat(user.getFirstName()).isEqualTo(payload.getFirstName());
         assertThat(user.getLastName()).isEqualTo(payload.getLastName());
