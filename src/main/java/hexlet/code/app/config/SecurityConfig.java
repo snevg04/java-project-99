@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,24 +43,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            JwtDecoder jwtDecoder
-    ) throws Exception {
-
-        return http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/login").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt.decoder(jwtDecoder))
-                )
-
-                .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/api/pages/*").permitAll().requestMatchers("/api/pages").permitAll()
+                        .requestMatchers("/").permitAll().requestMatchers("/index.html").permitAll()
+                        .requestMatchers("/assets/**").permitAll().anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
+                .httpBasic(Customizer.withDefaults()).build();
     }
 }

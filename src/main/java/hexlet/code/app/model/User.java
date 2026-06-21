@@ -5,6 +5,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,7 +15,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -45,6 +45,9 @@ public class User implements UserDetails {
         return List.of();
     }
 
+    @NotBlank
+    private String passwordDigest;
+
     @Override
     public String getUsername() {
         return email;
@@ -52,7 +55,7 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return passwordDigest;
     }
 
     @Override
