@@ -23,12 +23,11 @@ public class AppApplication {
 
     @PostConstruct
     public void init() {
-        if (userRepository.count() == 0) {
+        if (userRepository.findByEmail("hexlet@example.com").isEmpty()) {
             User admin = new User();
             admin.setEmail("hexlet@example.com");
-            admin.setPassword(
-                    passwordEncoder.encode("querty")
-            );
+            admin.setPassword(passwordEncoder.encode("querty"));
+            userRepository.save(admin);
         }
     }
 
