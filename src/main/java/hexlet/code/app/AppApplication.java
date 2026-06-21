@@ -26,7 +26,7 @@ public class AppApplication {
         if (userRepository.findByEmail("hexlet@example.com").isEmpty()) {
             User admin = new User();
             admin.setEmail("hexlet@example.com");
-            admin.setPassword(passwordEncoder.encode("querty"));
+            admin.setPasswordDigest(passwordEncoder.encode("querty"));
             userRepository.save(admin);
         }
     }
