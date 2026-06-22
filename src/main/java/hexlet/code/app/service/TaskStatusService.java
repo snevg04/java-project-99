@@ -26,7 +26,7 @@ public class TaskStatusService {
                 taskStatusRepository.existsBySlug(taskStatusCreateDTO.getSlug())
                         || taskStatusRepository.existsByName(taskStatusCreateDTO.getName())
         ) {
-            throw new ConflictException("TaskStatus with given slug or name already exists!");
+            throw new ConflictException("Task status with given slug or name already exists!");
         }
         var taskStatus = taskStatusMapper.toEntity(taskStatusCreateDTO);
         var savedTaskStatus = taskStatusRepository.save(taskStatus);
