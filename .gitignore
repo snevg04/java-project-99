@@ -23,4 +23,6 @@ out/
 ### Asciinema ### 
 demo.cast
 
+### node_modules ###
+node_modules
 
