@@ -32,7 +32,6 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
     private String email;
-    private String password;
 
     @CreatedDate
     private LocalDate createdAt;

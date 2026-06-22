@@ -30,9 +30,10 @@ public class UserService {
 
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         var user = toEntity(userCreateDTO);
-        user.setPassword(
+        user.setPasswordDigest(
                 passwordEncoder.encode(userCreateDTO.getPassword())
         );
+
         var savedUser = userRepository.save(user);
         return toDTO(savedUser);
     }

@@ -46,16 +46,35 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .authorizeHttpRequests(auth -> auth
+
+                        // фронтенд
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/assets/**"
+                        ).permitAll()
+
+                        // логин
                         .requestMatchers("/api/login").permitAll()
-                        .anyRequest().authenticated()
+
+                        // всё API требует JWT
+                        .requestMatchers("/api/**").authenticated()
+
+                        // всё остальное открываем
+                        .anyRequest().permitAll()
                 )
+
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt -> jwt.decoder(jwtDecoder))
                 )
+
                 .build();
     }
 }
