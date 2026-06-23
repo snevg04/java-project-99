@@ -56,8 +56,8 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        userRepository.delete(user);
     }
-
-
 }
