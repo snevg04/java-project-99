@@ -1,11 +1,14 @@
 package hexlet.code.app;
 
+import hexlet.code.app.dto.TaskStatusCreateDTO;
+import hexlet.code.app.dto.TaskStatusUpdateDTO;
+import hexlet.code.app.dto.UserCreateDTO;
 import hexlet.code.app.exception.ResourceNotFoundException;
+import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import net.datafaker.Faker;
-import org.instancio.Instancio;
-import org.instancio.Select;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -21,13 +24,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
+@WithMockUser(username = "hexlet@example.com")
 class AppApplicationTests {
 
     @Autowired
@@ -38,6 +43,9 @@ class AppApplicationTests {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TaskStatusRepository taskStatusRepository;
 
     private final Faker faker = new Faker();
 
@@ -59,13 +67,11 @@ class AppApplicationTests {
 
     @Test
     public void testCreate() throws Exception {
-        var payload = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getPassword), () -> faker.internet().password())
-                .create();
+        var payload = new UserCreateDTO();
+        payload.setFirstName(faker.name().firstName());
+        payload.setLastName(faker.name().lastName());
+        payload.setEmail(faker.internet().emailAddress());
+        payload.setPassword(faker.internet().password(6, 12));
 
         var result = mockMvc.perform(post("/api/users")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -93,13 +99,11 @@ class AppApplicationTests {
     @Test
     public void testShow() throws Exception {
 
-        var user = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getPassword), () -> faker.internet().password())
-                .create();
+        var user = new User();
+        user.setFirstName(faker.name().firstName());
+        user.setLastName(faker.name().lastName());
+        user.setEmail(faker.internet().emailAddress());
+        user.setPasswordDigest("test-password");
 
         var savedUser = userRepository.save(user);
         var userId = savedUser.getId();
@@ -121,13 +125,11 @@ class AppApplicationTests {
     @Test
     public void testUpdate() throws Exception {
 
-        var user = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getPassword), () -> faker.internet().password())
-                .create();
+        var user = new User();
+        user.setFirstName(faker.name().firstName());
+        user.setLastName(faker.name().lastName());
+        user.setEmail(faker.internet().emailAddress());
+        user.setPasswordDigest("test-password");
 
         var savedUser = userRepository.save(user);
         var userId = savedUser.getId();
@@ -157,13 +159,11 @@ class AppApplicationTests {
     @Test
     public void testDelete() throws Exception {
 
-        var user = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getPassword), () -> faker.internet().password())
-                .create();
+        var user = new User();
+        user.setFirstName(faker.name().firstName());
+        user.setLastName(faker.name().lastName());
+        user.setEmail(faker.internet().emailAddress());
+        user.setPasswordDigest("test-password");
 
         var savedUser = userRepository.save(user);
         var id = savedUser.getId();
@@ -174,4 +174,157 @@ class AppApplicationTests {
         assertThat(userRepository.findById(id)).isEmpty();
     }
 
+    @Test
+    public void testTaskStatusIndex() throws Exception {
+
+        mockMvc.perform(get("/api/task_statuses"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    var body = result.getResponse().getContentAsString();
+                    assertThatJson(body).isArray();
+                });
+    }
+
+    @Test
+    public void testCreateTaskStatus() throws Exception {
+        var payload = new TaskStatusCreateDTO();
+        payload.setName("New");
+        payload.setSlug("new");
+
+        var result = mockMvc.perform(post("/api/task_statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("id").isPresent(),
+                json -> json.node("name").isEqualTo("New"),
+                json -> json.node("slug").isEqualTo("new"),
+                json -> json.node("createdAt").isPresent()
+        );
+    }
+
+    @Test
+    public void testShowTaskStatus() throws Exception {
+
+        var status = new TaskStatus();
+        status.setName("Work-in-progress");
+        status.setSlug("work_in_progress");
+
+        var saved = taskStatusRepository.save(status);
+
+        var result = mockMvc.perform(get("/api/task_statuses/" + saved.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("id").isEqualTo(saved.getId()),
+                json -> json.node("name").isEqualTo("Work-in-progress"),
+                json -> json.node("slug").isEqualTo("work_in_progress"),
+                json -> json.node("createdAt").isPresent()
+        );
+    }
+
+    @Test
+    public void testUpdateTaskStatus() throws Exception {
+
+        var status = new TaskStatus();
+        status.setName("Old");
+        status.setSlug("old");
+
+        var saved = taskStatusRepository.save(status);
+
+        var payload = new TaskStatusUpdateDTO();
+        payload.setName("Updated");
+
+        var result = mockMvc.perform(put("/api/task_statuses/" + saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("id").isEqualTo(saved.getId()),
+                json -> json.node("name").isEqualTo("Updated"),
+                json -> json.node("slug").isEqualTo("old")
+        );
+    }
+
+    @Test
+    public void testDeleteTaskStatus() throws Exception {
+
+        var status = new TaskStatus();
+        status.setName("Temp");
+        status.setSlug("temp");
+
+        var saved = taskStatusRepository.save(status);
+
+        mockMvc.perform(delete("/api/task_statuses/" + saved.getId()))
+                .andExpect(status().isNoContent());
+
+        assertThat(taskStatusRepository.findById(saved.getId())).isEmpty();
+    }
+
+    @Test
+    @WithMockUser
+    public void testCreateValidationNameBlank() throws Exception {
+
+        var payload = new TaskStatusCreateDTO();
+        payload.setName("");
+        payload.setSlug("valid_slug");
+
+        var result = mockMvc.perform(post("/api/task_statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString())
+                .node("name").isEqualTo("must not be blank");
+    }
+
+    @Test
+    @WithMockUser
+    public void testCreateValidationSlugBlank() throws Exception {
+
+        var payload = new TaskStatusCreateDTO();
+        payload.setName("Valid Name");
+        payload.setSlug("");
+
+        var result = mockMvc.perform(post("/api/task_statuses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        assertThatJson(result.getResponse().getContentAsString())
+                .node("slug").isEqualTo("must not be blank");
+    }
+
+    @Test
+    @WithMockUser(username = "test")
+    void testUpdateValidationBlank() throws Exception {
+
+        var user = new User();
+        user.setFirstName(faker.name().firstName());
+        user.setLastName(faker.name().lastName());
+        user.setEmail(faker.internet().emailAddress());
+        user.setPasswordDigest(faker.internet().password(8, 12));
+
+        var saved = userRepository.save(user);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("email", "");
+
+        mockMvc.perform(put("/api/users/" + saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+        var reloaded = userRepository.findById(saved.getId()).orElseThrow();
+
+        assertThat(reloaded.getEmail()).isEqualTo(user.getEmail());
+        assertThat(reloaded.getFirstName()).isEqualTo(user.getFirstName());
+        assertThat(reloaded.getLastName()).isEqualTo(user.getLastName());
+    }
 }
