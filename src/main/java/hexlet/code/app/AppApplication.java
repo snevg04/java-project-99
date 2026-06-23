@@ -35,6 +35,7 @@ public class AppApplication {
             userRepository.save(admin);
         }
 
+        taskStatusRepository.deleteAll();
         if (taskStatusRepository.findBySlug("draft").isEmpty()) {
             TaskStatus defaultStatus1 = new TaskStatus();
             defaultStatus1.setName("Draft");
