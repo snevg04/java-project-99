@@ -26,7 +26,9 @@ public class TaskMapper {
         taskDto.setCreatedAt(task.getCreatedAt());
         taskDto.setName(task.getName());
         taskDto.setDescription(task.getDescription());
-        taskDto.setAssigneeId(task.getAssignee().getId());
+        if (task.getAssignee() != null) {
+            taskDto.setAssigneeId(task.getAssignee().getId());
+        }
         taskDto.setTaskStatusId(task.getTaskStatus().getId());
         return taskDto;
     }
@@ -36,10 +38,13 @@ public class TaskMapper {
         task.setIndex(taskCreateDTO.getIndex());
         task.setName(taskCreateDTO.getName());
         task.setDescription(taskCreateDTO.getDescription());
-        task.setAssignee(userRepository.findById(taskCreateDTO.getAssigneeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
+        if (taskCreateDTO.getAssigneeId() != null) {
+            task.setAssignee(userRepository.findById(taskCreateDTO.getAssigneeId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
+        }
+
         task.setTaskStatus(taskStatusRepository.findById(taskCreateDTO.getTaskStatusId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
+                        .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
         return task;
     }
 
