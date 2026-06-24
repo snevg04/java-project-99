@@ -38,10 +38,6 @@ public class Task {
 
     private String description;
 
-    @NotNull
-    @ManyToOne
-    private TaskStatus status;
-
     @ManyToOne
     private User assignee;
 
