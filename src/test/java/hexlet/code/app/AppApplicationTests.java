@@ -1,11 +1,14 @@
 package hexlet.code.app;
 
+import hexlet.code.app.dto.TaskCreateDTO;
 import hexlet.code.app.dto.TaskStatusCreateDTO;
 import hexlet.code.app.dto.TaskStatusUpdateDTO;
 import hexlet.code.app.dto.UserCreateDTO;
 import hexlet.code.app.exception.ResourceNotFoundException;
+import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import net.datafaker.Faker;
@@ -46,6 +49,9 @@ class AppApplicationTests {
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     private final Faker faker = new Faker();
 
@@ -326,5 +332,127 @@ class AppApplicationTests {
         assertThat(reloaded.getEmail()).isEqualTo(user.getEmail());
         assertThat(reloaded.getFirstName()).isEqualTo(user.getFirstName());
         assertThat(reloaded.getLastName()).isEqualTo(user.getLastName());
+    }
+
+    @Test
+    void testCreateTask() throws Exception {
+
+        Long draftId = 1L;
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "Test task");
+        payload.put("index", 10);
+        payload.put("description", "desc");
+        payload.put("taskStatusId", draftId.longValue());
+
+        var result = mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("name").isEqualTo("Test task"),
+                j -> j.node("taskStatusId").isEqualTo(1)
+        );
+    }
+
+    @Test
+    void testShowTask() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+
+        var task = new Task();
+        task.setName("Show task");
+        task.setTaskStatus(status);
+
+        taskRepository.save(task);
+
+        var result = mockMvc.perform(get("/api/tasks/" + task.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("id").isEqualTo(task.getId().intValue()),
+                j -> j.node("name").isEqualTo("Show task")
+        );
+    }
+
+    @Test
+    void testIndexTasks() throws Exception {
+
+        mockMvc.perform(get("/api/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    var body = result.getResponse().getContentAsString();
+                    assertThatJson(body).isArray();
+                });
+    }
+
+    @Test
+    void testUpdateTask() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+
+        var task = new Task();
+        task.setName("Old name");
+        task.setTaskStatus(status);
+
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "New name");
+
+        var result = mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("id").isEqualTo(task.getId().intValue()),
+                j -> j.node("name").isEqualTo("New name")
+        );
+    }
+
+    @Test
+    void testDeleteTask() throws Exception {
+
+        mockMvc.perform(delete("/api/tasks/1"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/tasks/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testCreateTaskValidationBlankName() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "");
+        payload.put("taskStatusId", 1);
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateTaskValidationNoStatus() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "Valid name");
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
     }
 }
