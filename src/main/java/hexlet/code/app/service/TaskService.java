@@ -32,7 +32,7 @@ public class TaskService {
         return taskMapper.toDTO(savedTask);
     }
 
-    public TaskDTO getTaskById (Long id) {
+    public TaskDTO getTaskById(Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
         return taskMapper.toDTO(task);

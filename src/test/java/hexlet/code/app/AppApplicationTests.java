@@ -1,6 +1,5 @@
 package hexlet.code.app;
 
-import hexlet.code.app.dto.TaskCreateDTO;
 import hexlet.code.app.dto.TaskStatusCreateDTO;
 import hexlet.code.app.dto.TaskStatusUpdateDTO;
 import hexlet.code.app.dto.UserCreateDTO;
