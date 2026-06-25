@@ -49,5 +49,4 @@ public class Task implements BaseEntity {
 
     @ManyToMany
     private List<Label> labels;
-
 }

@@ -4,7 +4,9 @@ import hexlet.code.app.dto.TaskCreateDTO;
 import hexlet.code.app.dto.TaskDTO;
 import hexlet.code.app.dto.TaskUpdateDTO;
 import hexlet.code.app.exception.ResourceNotFoundException;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ public class TaskMapper {
     @Autowired
     private TaskStatusRepository taskStatusRepository;
 
+    @Autowired
+    private LabelRepository labelRepository;
+
     public TaskDTO toDTO(Task task) {
         var taskDto = new TaskDTO();
         taskDto.setId(task.getId());
@@ -30,6 +35,14 @@ public class TaskMapper {
             taskDto.setAssigneeId(task.getAssignee().getId());
         }
         taskDto.setTaskStatusId(task.getTaskStatus().getId());
+        if (task.getLabels() != null) {
+            taskDto.setLabelIds(
+                    task.getLabels()
+                            .stream()
+                            .map(Label::getId)
+                            .toList()
+            );
+        }
         return taskDto;
     }
 
@@ -45,6 +58,17 @@ public class TaskMapper {
 
         task.setTaskStatus(taskStatusRepository.findById(taskCreateDTO.getTaskStatusId())
                         .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
+
+        if (taskCreateDTO.getLabelIds() != null) {
+
+            var labels = labelRepository.findAllById(taskCreateDTO.getLabelIds());
+
+            if (labels.size() != taskCreateDTO.getLabelIds().size()) {
+                throw new ResourceNotFoundException("One or more labels not found!");
+            }
+            task.setLabels(labels);
+        }
+
         return task;
     }
 
@@ -71,6 +95,17 @@ public class TaskMapper {
         if (taskUpdateDTO.getTaskStatusId() != null) {
             task.setTaskStatus(taskStatusRepository.findById(taskUpdateDTO.getTaskStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
+        }
+
+        if (taskUpdateDTO.getLabelIds() != null) {
+
+            var labels = labelRepository.findAllById(taskUpdateDTO.getLabelIds());
+
+            if (labels.size() != taskUpdateDTO.getLabelIds().size()) {
+                throw new ResourceNotFoundException("One or more labels not found!");
+            }
+
+            task.setLabels(labels);
         }
     }
 }

@@ -3,6 +3,8 @@ package hexlet.code.app.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 public class TaskUpdateDTO {
@@ -11,4 +13,5 @@ public class TaskUpdateDTO {
     private String description;
     private Long assigneeId;
     private Long taskStatusId;
+    private List<Long> labelIds;
 }

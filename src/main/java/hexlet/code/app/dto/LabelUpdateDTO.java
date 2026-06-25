@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 public class LabelUpdateDTO {
     @NotBlank
-    @Size(min = 3, max = 10)
+    @Size(min = 3, max = 1000)
     private String name;
 }
