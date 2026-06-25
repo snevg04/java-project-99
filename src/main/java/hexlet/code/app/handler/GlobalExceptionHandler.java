@@ -1,6 +1,7 @@
 package hexlet.code.app.handler;
 
 import hexlet.code.app.exception.ConflictException;
+import hexlet.code.app.exception.LabelInUseException;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<String> handleConflictException(ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(LabelInUseException.class)
+    public ResponseEntity<String> handleLabelInUseException(LabelInUseException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ex.getMessage());
     }
