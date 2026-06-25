@@ -4,9 +4,11 @@ import hexlet.code.app.dto.TaskStatusCreateDTO;
 import hexlet.code.app.dto.TaskStatusUpdateDTO;
 import hexlet.code.app.dto.UserCreateDTO;
 import hexlet.code.app.exception.ResourceNotFoundException;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
@@ -31,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
+import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -52,6 +55,9 @@ class AppApplicationTests {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private LabelRepository labelRepository;
+
     private final Faker faker = new Faker();
 
     @Test
@@ -61,7 +67,7 @@ class AppApplicationTests {
     }
 
     @Test
-    public void testIndex() throws Exception {
+    public void testIndexUsers() throws Exception {
         var result = mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -71,7 +77,7 @@ class AppApplicationTests {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    public void testCreateUser() throws Exception {
         var payload = new UserCreateDTO();
         payload.setFirstName(faker.name().firstName());
         payload.setLastName(faker.name().lastName());
@@ -102,7 +108,7 @@ class AppApplicationTests {
     }
 
     @Test
-    public void testShow() throws Exception {
+    public void testShowUser() throws Exception {
 
         var user = new User();
         user.setFirstName(faker.name().firstName());
@@ -128,7 +134,7 @@ class AppApplicationTests {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdateUser() throws Exception {
 
         var user = new User();
         user.setFirstName(faker.name().firstName());
@@ -162,7 +168,7 @@ class AppApplicationTests {
     }
 
     @Test
-    public void testDelete() throws Exception {
+    public void testDeleteUser() throws Exception {
 
         var user = new User();
         user.setFirstName(faker.name().firstName());
@@ -180,7 +186,7 @@ class AppApplicationTests {
     }
 
     @Test
-    public void testTaskStatusIndex() throws Exception {
+    public void testIndexTaskStatuses() throws Exception {
 
         mockMvc.perform(get("/api/task_statuses"))
                 .andExpect(status().isOk())
@@ -343,6 +349,7 @@ class AppApplicationTests {
         payload.put("index", 10);
         payload.put("description", "desc");
         payload.put("taskStatusId", draftId.longValue());
+        payload.put("labelIds", List.of(1L));
 
         var result = mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -354,7 +361,8 @@ class AppApplicationTests {
 
         assertThatJson(body).and(
                 j -> j.node("name").isEqualTo("Test task"),
-                j -> j.node("taskStatusId").isEqualTo(1)
+                j -> j.node("taskStatusId").isEqualTo(1),
+                j -> j.node("labelIds").isArray()
         );
     }
 
@@ -362,10 +370,12 @@ class AppApplicationTests {
     void testShowTask() throws Exception {
 
         var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
 
         var task = new Task();
         task.setName("Show task");
         task.setTaskStatus(status);
+        task.setLabels(List.of(label));
 
         taskRepository.save(task);
 
@@ -377,7 +387,8 @@ class AppApplicationTests {
 
         assertThatJson(body).and(
                 j -> j.node("id").isEqualTo(task.getId().intValue()),
-                j -> j.node("name").isEqualTo("Show task")
+                j -> j.node("name").isEqualTo("Show task"),
+                j -> j.node("labelIds").isArray()
         );
     }
 
@@ -389,6 +400,7 @@ class AppApplicationTests {
                 .andExpect(result -> {
                     var body = result.getResponse().getContentAsString();
                     assertThatJson(body).isArray();
+                    assertThatJson(body).node("[0].labelIds").isArray();
                 });
     }
 
@@ -396,15 +408,18 @@ class AppApplicationTests {
     void testUpdateTask() throws Exception {
 
         var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
 
         var task = new Task();
         task.setName("Old name");
         task.setTaskStatus(status);
+        task.setLabels(List.of(label));
 
         taskRepository.save(task);
 
         var payload = new HashMap<String, Object>();
         payload.put("name", "New name");
+        payload.put("labelIds", List.of(label.getId()));
 
         var result = mockMvc.perform(put("/api/tasks/" + task.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -416,7 +431,8 @@ class AppApplicationTests {
 
         assertThatJson(body).and(
                 j -> j.node("id").isEqualTo(task.getId().intValue()),
-                j -> j.node("name").isEqualTo("New name")
+                j -> j.node("name").isEqualTo("New name"),
+                j -> j.node("labelIds").isArray()
         );
     }
 
@@ -450,6 +466,149 @@ class AppApplicationTests {
         payload.put("name", "Valid name");
 
         mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testIndexLabels() throws Exception {
+
+        mockMvc.perform(get("/api/labels"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    var body = result.getResponse().getContentAsString();
+                    assertThatJson(body).isArray();
+                });
+    }
+
+    @Test
+    void testCreateLabel() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "new label");
+
+        var result = mockMvc.perform(post("/api/labels")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("name").isEqualTo("new label"),
+                j -> j.node("createdAt").isString()
+        );
+    }
+
+    @Test
+    void testShowLabel() throws Exception {
+
+        var label = new Label();
+        label.setName("test-label");
+        labelRepository.save(label);
+
+        var result = mockMvc.perform(get("/api/labels/" + label.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("id").isEqualTo(label.getId().intValue()),
+                j -> j.node("name").isEqualTo("test-label"),
+                j -> j.node("createdAt").isString()
+        );
+    }
+
+    @Test
+    void testUpdateLabel() throws Exception {
+
+        var label = new Label();
+        label.setName("old name");
+        labelRepository.save(label);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "updated name");
+
+        var result = mockMvc.perform(put("/api/labels/" + label.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("id").isEqualTo(label.getId().intValue()),
+                j -> j.node("name").isEqualTo("updated name")
+        );
+    }
+
+    @Test
+    void testDeleteLabel() throws Exception {
+
+        var label = new Label();
+        label.setName("to delete");
+        labelRepository.save(label);
+
+        mockMvc.perform(delete("/api/labels/" + label.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/labels/" + label.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testDeleteLabelLinkedToTask() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+
+        var label = new Label();
+        label.setName("label-delete-test");
+        label = labelRepository.save(label);
+
+        var task = new Task();
+        task.setName("task");
+        task.setTaskStatus(status);
+        task.setLabels(List.of(label));
+        taskRepository.save(task);
+
+        mockMvc.perform(delete("/api/labels/" + label.getId()))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void testCreateLabelValidationBlankName() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "");
+
+        mockMvc.perform(post("/api/labels")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateLabelValidationTooShort() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("name", "ab");
+
+        mockMvc.perform(post("/api/labels")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateLabelValidationMissingName() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+
+        mockMvc.perform(post("/api/labels")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(payload)))
                 .andExpect(status().isBadRequest());
