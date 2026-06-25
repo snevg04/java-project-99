@@ -85,7 +85,6 @@ public class AppApplication {
             label.setName("bug");
             labelRepository.save(label);
         }
-
     }
 
     public static void main(String[] args) {
