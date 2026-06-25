@@ -1,7 +1,9 @@
 package hexlet.code.app;
 
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -17,12 +19,14 @@ public class AppApplication {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TaskStatusRepository taskStatusRepository;
+    private final LabelRepository labelRepository;
 
     public AppApplication(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder, TaskStatusRepository taskStatusRepository) {
+                          PasswordEncoder passwordEncoder, TaskStatusRepository taskStatusRepository, LabelRepository labelRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.taskStatusRepository = taskStatusRepository;
+        this.labelRepository = labelRepository;
     }
 
     @PostConstruct
@@ -68,6 +72,18 @@ public class AppApplication {
             defaultStatus5.setName("Published");
             defaultStatus5.setSlug("published");
             taskStatusRepository.save(defaultStatus5);
+        }
+
+        if (labelRepository.findByName("feature").isEmpty()) {
+            Label label = new Label();
+            label.setName("feature");
+            labelRepository.save(label);
+        }
+
+        if (labelRepository.findByName("bug").isEmpty()) {
+            Label label = new Label();
+            label.setName("bug");
+            labelRepository.save(label);
         }
 
     }
