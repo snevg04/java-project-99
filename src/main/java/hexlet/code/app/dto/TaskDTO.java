@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -16,5 +17,5 @@ public class TaskDTO {
     private String description;
     private Long assigneeId;
     private Long taskStatusId;
-    private List<Long> labelIds;
+    private List<Long> labelIds = new ArrayList<>();
 }

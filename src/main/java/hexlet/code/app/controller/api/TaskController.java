@@ -30,7 +30,7 @@ public class TaskController {
     private TaskService taskService;
 
     @GetMapping("")
-    public Page<TaskDTO> index(TaskParamsDTO params, @RequestParam(defaultValue = "5") int page) {
+    public Page<TaskDTO> index(TaskParamsDTO params, @RequestParam(defaultValue = "1") int page) {
         return taskService.getAllTasks(params, page);
     }
 

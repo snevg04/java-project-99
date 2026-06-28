@@ -2,11 +2,14 @@ package hexlet.code.app.specification;
 
 import hexlet.code.app.dto.TaskParamsDTO;
 import hexlet.code.app.model.Task;
+import hexlet.code.app.repository.LabelRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TaskSpecification {
+
     public Specification<Task> build(TaskParamsDTO params) {
         return withTitleCont(params.getTitleCont())
                 .and(withAssigneeId(params.getAssigneeId()))
@@ -16,17 +19,17 @@ public class TaskSpecification {
 
     private Specification<Task> withTitleCont(String name) {
         return (root, query, cb) -> name == null ? cb.conjunction()
-                : cb.like(root.get("name"), name);
+                : cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
     }
 
     private Specification<Task> withAssigneeId(Long assigneeId) {
         return (root, query, cb) -> assigneeId == null ? cb.conjunction()
-                : cb.equal(root.get("assignee"), assigneeId);
+                : cb.equal(root.get("assignee").get("id"), assigneeId);
     }
 
     private Specification<Task> withStatus(String slug) {
         return (root, query, cb) -> slug == null ? cb.conjunction()
-                : cb.equal(root.get("slug"), slug);
+                : cb.equal(root.get("taskStatus").get("slug"), slug);
     }
 
     private Specification<Task> withLabelId(Long labelId) {
@@ -36,8 +39,7 @@ public class TaskSpecification {
             }
 
             query.distinct(true);
-            var labelJoin = root.join("labels");
-            return cb.equal(labelJoin.get("id"), labelId);
+            return cb.equal(root.join("labels").get("id"), labelId);
         };
     }
 }

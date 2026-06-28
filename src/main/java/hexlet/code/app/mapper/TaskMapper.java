@@ -35,14 +35,12 @@ public class TaskMapper {
             taskDto.setAssigneeId(task.getAssignee().getId());
         }
         taskDto.setTaskStatusId(task.getTaskStatus().getId());
-        if (task.getLabels() != null) {
-            taskDto.setLabelIds(
-                    task.getLabels()
-                            .stream()
-                            .map(Label::getId)
-                            .toList()
-            );
-        }
+        taskDto.setLabelIds(
+                task.getLabels()
+                        .stream()
+                        .map(Label::getId)
+                        .toList()
+        );
         return taskDto;
     }
 

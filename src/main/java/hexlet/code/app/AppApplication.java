@@ -31,7 +31,6 @@ public class AppApplication {
 
     @PostConstruct
     public void init() {
-        userRepository.deleteAll();
         if (userRepository.findByEmail("hexlet@example.com").isEmpty()) {
             User admin = new User();
             admin.setEmail("hexlet@example.com");
@@ -39,7 +38,6 @@ public class AppApplication {
             userRepository.save(admin);
         }
 
-        taskStatusRepository.deleteAll();
         if (taskStatusRepository.findBySlug("draft").isEmpty()) {
             TaskStatus defaultStatus1 = new TaskStatus();
             defaultStatus1.setName("Draft");
