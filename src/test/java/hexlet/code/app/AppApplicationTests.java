@@ -60,6 +60,17 @@ class AppApplicationTests {
 
     private final Faker faker = new Faker();
 
+    private Task createTask(String name, User user, TaskStatus status, Label label) {
+        Task task = new Task();
+        task.setName(name);
+        task.setDescription("Description");
+        task.setIndex(1);
+        task.setAssignee(user);
+        task.setTaskStatus(status);
+        task.setLabels(List.of(label));
+        return taskRepository.save(task);
+    }
+
     @Test
     public void testWelcome() throws Exception {
         mockMvc.perform(get("/welcome"))
@@ -85,8 +96,8 @@ class AppApplicationTests {
         payload.setPassword(faker.internet().password(6, 12));
 
         var result = mockMvc.perform(post("/api/users")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsString(payload)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -399,8 +410,10 @@ class AppApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     var body = result.getResponse().getContentAsString();
-                    assertThatJson(body).isArray();
-                    assertThatJson(body).node("[0].labelIds").isArray();
+                    assertThatJson(body).isObject();
+                    assertThatJson(body)
+                            .node("content")
+                            .isArray();
                 });
     }
 
@@ -612,5 +625,112 @@ class AppApplicationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(payload)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testFilterByTitleCont() throws Exception {
+
+        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+        TaskStatus status = taskStatusRepository.findBySlug("to_be_fixed").orElseThrow();
+        Label label = labelRepository.findByName("bug").orElseThrow();
+
+        createTask("Create new version", user, status, label);
+
+        var result = mockMvc.perform(get("/api/tasks")
+                        .param("titleCont", "Create"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body)
+                .node("content")
+                .isArray()
+                .satisfies(content -> assertThatJson(content)
+                        .node("[0].name")
+                        .asString()
+                        .contains("Create"));
+    }
+
+    @Test
+    void testFilterByAssigneeId() throws Exception {
+
+        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+
+        var result = mockMvc.perform(get("/api/tasks")
+                        .param("assigneeId", user.getId().toString()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        System.out.println(body);
+
+        assertThatJson(body)
+                .node("content")
+                .isArray()
+                .satisfies(content -> {
+
+                    // content — это JSON array
+                    for (Object item : content) {
+
+                        assertThatJson(item)
+                                .node("assigneeId")
+                                .isEqualTo(user.getId());
+                    }
+                });
+    }
+
+    @Test
+    void testFilterByLabelId() throws Exception {
+
+        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+        TaskStatus status = taskStatusRepository.findBySlug("to_be_fixed").orElseThrow();
+        Label label = labelRepository.findByName("bug").orElseThrow();
+
+        createTask("Task with label", user, status, label);
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("labelId", label.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    var body = result.getResponse().getContentAsString();
+
+                    assertThatJson(body)
+                            .node("content")
+                            .isArray()
+                            .satisfies(content -> assertThatJson(content)
+                                    .node("[*].labelIds")
+                                    .matches(arr -> true));
+                });
+    }
+
+    @Test
+    void testFilterCombined() throws Exception {
+
+        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+        TaskStatus status = taskStatusRepository.findBySlug("to_be_fixed").orElseThrow();
+        Label label = taskRepository.findById(1L)
+                .flatMap(t -> labelRepository.findByName("bug"))
+                .orElse(labelRepository.findByName("bug").orElseThrow());
+
+        createTask("Create new version", user, status, label);
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("titleCont", "Create")
+                        .param("assigneeId", user.getId().toString())
+                        .param("status", status.getSlug())
+                        .param("labelId", label.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    var body = result.getResponse().getContentAsString();
+
+                    assertThatJson(body)
+                            .node("content")
+                            .isArray()
+                            .satisfies(content -> assertThatJson(content)
+                                    .node("[0].name")
+                                    .isPresent());
+                });
     }
 }
