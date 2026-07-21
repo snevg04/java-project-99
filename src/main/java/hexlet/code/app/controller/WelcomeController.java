@@ -10,4 +10,9 @@ public class WelcomeController {
     public String getWelcomeMessage() {
         return "Welcome to Spring!";
     }
+
+    @GetMapping("sentry")
+    public String getSentryMessage() {
+        throw new RuntimeException("Sentry test exception");
+    }
 }
