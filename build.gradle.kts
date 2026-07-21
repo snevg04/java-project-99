@@ -3,6 +3,7 @@ plugins {
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.sonarqube") version "7.3.1.8318"
+    id("io.sentry.jvm.gradle") version "6.15.0"
 	jacoco
     checkstyle
 }
@@ -33,6 +34,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("io.sentry:sentry-spring-boot-4:8.49.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     implementation("net.datafaker:datafaker:2.0.1")
     implementation("org.instancio:instancio-junit:3.3.0")
@@ -57,6 +59,14 @@ sonar {
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
 	)
   }
+}
+
+sentry {
+    includeSourceContext = true
+
+    org = "snevg04"
+    projectName = "java-task-manager"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
 jacoco {
