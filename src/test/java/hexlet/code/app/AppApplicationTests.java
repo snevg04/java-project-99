@@ -353,13 +353,13 @@ class AppApplicationTests {
     @Test
     void testCreateTask() throws Exception {
 
-        Long draftId = 1L;
+        Long id = 1L;
 
         var payload = new HashMap<String, Object>();
         payload.put("name", "Test task");
         payload.put("index", 10);
         payload.put("description", "desc");
-        payload.put("taskStatusId", draftId.longValue());
+        payload.put("taskStatusId", id);
         payload.put("labelIds", List.of(1L));
 
         var result = mockMvc.perform(post("/api/tasks")
