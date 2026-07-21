@@ -2,8 +2,6 @@ package hexlet.code.app.specification;
 
 import hexlet.code.app.dto.TaskParamsDTO;
 import hexlet.code.app.model.Task;
-import hexlet.code.app.repository.LabelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 

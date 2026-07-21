@@ -21,8 +21,9 @@ public class AppApplication {
     private final TaskStatusRepository taskStatusRepository;
     private final LabelRepository labelRepository;
 
-    public AppApplication(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder, TaskStatusRepository taskStatusRepository, LabelRepository labelRepository) {
+    public AppApplication(
+            UserRepository userRepository, PasswordEncoder passwordEncoder,
+            TaskStatusRepository taskStatusRepository, LabelRepository labelRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.taskStatusRepository = taskStatusRepository;
