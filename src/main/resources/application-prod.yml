@@ -8,3 +8,7 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+
+  sentry:
+    dsn: ${SENTRY_DSN}
+    send-default-pii: true
