@@ -11,7 +11,7 @@ public class WelcomeController {
         return "Welcome to Spring!";
     }
 
-    @GetMapping("sentry")
+    @GetMapping("/sentry")
     public String getSentryMessage() {
         throw new RuntimeException("Sentry test exception");
     }
