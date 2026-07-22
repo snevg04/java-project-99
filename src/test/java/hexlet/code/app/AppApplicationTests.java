@@ -410,10 +410,7 @@ class AppApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     var body = result.getResponse().getContentAsString();
-                    assertThatJson(body).isObject();
-                    assertThatJson(body)
-                            .node("content")
-                            .isArray();
+                    assertThatJson(body).isArray();
                 });
     }
 
@@ -644,7 +641,6 @@ class AppApplicationTests {
         var body = result.getResponse().getContentAsString();
 
         assertThatJson(body)
-                .node("content")
                 .isArray()
                 .satisfies(content -> assertThatJson(content)
                         .node("[0].name")
@@ -667,7 +663,6 @@ class AppApplicationTests {
         System.out.println(body);
 
         assertThatJson(body)
-                .node("content")
                 .isArray()
                 .satisfies(content -> {
 
@@ -697,7 +692,6 @@ class AppApplicationTests {
                     var body = result.getResponse().getContentAsString();
 
                     assertThatJson(body)
-                            .node("content")
                             .isArray()
                             .satisfies(content -> assertThatJson(content)
                                     .node("[*].labelIds")
@@ -726,7 +720,6 @@ class AppApplicationTests {
                     var body = result.getResponse().getContentAsString();
 
                     assertThatJson(body)
-                            .node("content")
                             .isArray()
                             .satisfies(content -> assertThatJson(content)
                                     .node("[0].name")
