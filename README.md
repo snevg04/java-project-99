@@ -6,3 +6,7 @@
 
 ### GitHub workflows CI:
 [![GitHub workflows CI](https://github.com/snevg04/java-project-99/actions/workflows/build.yml/badge.svg)](https://github.com/snevg04/java-project-99/actions/workflows/build.yml)
+
+
+# Менеджер задач
+Приложение представляет собой трекер задач, который поддерживает назначение исполнителей и статусов для любой задачи. Для удобной работы реализована фильтрация задач по названию, исполнителю, статусам и ярлыкам. Помимо этого поддерживается возможность кастомизации в виде создания своих статусов и ярлыков.
