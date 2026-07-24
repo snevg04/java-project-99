@@ -12,6 +12,7 @@ import hexlet.code.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -69,7 +70,7 @@ public class TaskMapper {
             }
             task.setLabels(labels);
         } else {
-            task.setLabels(List.of());
+            task.setLabels(new ArrayList<>());
         }
 
         return task;
@@ -111,7 +112,7 @@ public class TaskMapper {
 
             task.setLabels(labels);
         } else {
-            task.setLabels(List.of());
+            task.setLabels(new ArrayList<>());
         }
     }
 }
