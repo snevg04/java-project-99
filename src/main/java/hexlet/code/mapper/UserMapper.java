@@ -4,10 +4,15 @@ import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     public UserDTO toDTO(User user) {
         var userDto = new UserDTO();
         userDto.setId(user.getId());
@@ -38,6 +43,9 @@ public class UserMapper {
         }
         if (userUpdateDTO.getEmail() != null) {
             user.setEmail(userUpdateDTO.getEmail());
+        }
+        if (userUpdateDTO.getPassword() != null) {
+            user.setPasswordDigest(passwordEncoder.encode(userUpdateDTO.getPassword()));
         }
     }
 }

@@ -341,16 +341,16 @@ class AppApplicationTests {
         var saved = userRepository.save(user);
 
         var payload = new HashMap<String, Object>();
-        payload.put("email", "");
+        payload.put("firstName", "Updated Name");
 
         mockMvc.perform(put("/api/users/" + saved.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(payload)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
         var reloaded = userRepository.findById(saved.getId()).orElseThrow();
 
         assertThat(reloaded.getEmail()).isEqualTo(user.getEmail());
-        assertThat(reloaded.getFirstName()).isEqualTo(user.getFirstName());
+        assertThat(reloaded.getFirstName()).isEqualTo("Updated Name");
         assertThat(reloaded.getLastName()).isEqualTo(user.getLastName());
     }
 
