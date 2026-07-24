@@ -94,8 +94,6 @@ public class TaskMapper {
         if (taskUpdateDTO.getAssignee_id() != null) {
             task.setAssignee(userRepository.findById(taskUpdateDTO.getAssignee_id())
                     .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
-        } else {
-            task.setAssignee(null);
         }
 
         if (taskUpdateDTO.getStatus() != null) {
@@ -105,16 +103,18 @@ public class TaskMapper {
 
         var taskLabelIds = taskUpdateDTO.getTaskLabelIds();
 
-        if (taskLabelIds != null && !taskLabelIds.isEmpty()) {
-            var labels = labelRepository.findAllById(taskLabelIds);
+        if (taskLabelIds != null) {
+            if (taskLabelIds.isEmpty()) {
+                task.setLabels(new ArrayList<>());
+            } else {
+                var labels = labelRepository.findAllById(taskLabelIds);
 
-            if (labels.size() != taskLabelIds.size()) {
-                throw new ResourceNotFoundException("One or more labels not found!");
+                if (labels.size() != taskLabelIds.size()) {
+                    throw new ResourceNotFoundException("One or more labels not found!");
+                }
+
+                task.setLabels(labels);
             }
-
-            task.setLabels(labels);
-        } else {
-            task.setLabels(new ArrayList<>());
         }
     }
 }
