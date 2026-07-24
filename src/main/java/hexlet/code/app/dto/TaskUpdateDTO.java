@@ -9,9 +9,11 @@ import java.util.List;
 @Getter
 public class TaskUpdateDTO {
     private Integer index;
-    private String name;
-    private String description;
-    private Long assigneeId;
-    private Long taskStatusId;
-    private List<Long> labelIds;
+    private String title;
+    private String content;
+    // CHECKSTYLE:OFF
+    private Long assignee_id;
+    // CHECKSTYLE:ON
+    private String status;
+    private List<Long> taskLabelIds;
 }

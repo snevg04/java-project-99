@@ -17,7 +17,7 @@ public class TaskSpecification {
 
     private Specification<Task> withTitleCont(String name) {
         return (root, query, cb) -> name == null ? cb.conjunction()
-                : cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+                : cb.like(cb.lower(root.get("title")), "%" + name.toLowerCase() + "%");
     }
 
     private Specification<Task> withAssigneeId(Long assigneeId) {

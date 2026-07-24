@@ -60,10 +60,10 @@ class AppApplicationTests {
 
     private final Faker faker = new Faker();
 
-    private Task createTask(String name, User user, TaskStatus status, Label label) {
+    private Task createTask(String title, User user, TaskStatus status, Label label) {
         Task task = new Task();
-        task.setName(name);
-        task.setDescription("Description");
+        task.setTitle(title);
+        task.setContent("Description");
         task.setIndex(1);
         task.setAssignee(user);
         task.setTaskStatus(status);
@@ -302,8 +302,10 @@ class AppApplicationTests {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        assertThatJson(result.getResponse().getContentAsString())
-                .node("name").isEqualTo("must not be blank");
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("message").isEqualTo("Validation error"),
+                json -> json.node("errors.name").isEqualTo("must not be blank")
+        );
     }
 
     @Test
@@ -320,8 +322,10 @@ class AppApplicationTests {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        assertThatJson(result.getResponse().getContentAsString())
-                .node("slug").isEqualTo("must not be blank");
+        assertThatJson(result.getResponse().getContentAsString()).and(
+                json -> json.node("message").isEqualTo("Validation error"),
+                json -> json.node("errors.slug").isEqualTo("must not be blank")
+        );
     }
 
     @Test
@@ -353,14 +357,12 @@ class AppApplicationTests {
     @Test
     void testCreateTask() throws Exception {
 
-        Long id = 1L;
-
         var payload = new HashMap<String, Object>();
-        payload.put("name", "Test task");
+        payload.put("title", "Test task");
         payload.put("index", 10);
-        payload.put("description", "desc");
-        payload.put("taskStatusId", id);
-        payload.put("labelIds", List.of(1L));
+        payload.put("content", "desc");
+        payload.put("status", "draft");
+        payload.put("taskLabelIds", List.of(1L));
 
         var result = mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -371,9 +373,31 @@ class AppApplicationTests {
         var body = result.getResponse().getContentAsString();
 
         assertThatJson(body).and(
-                j -> j.node("name").isEqualTo("Test task"),
-                j -> j.node("taskStatusId").isEqualTo(1),
-                j -> j.node("labelIds").isArray()
+                j -> j.node("title").isEqualTo("Test task"),
+                j -> j.node("status").isEqualTo("draft"),
+                j -> j.node("taskLabelIds").isArray()
+        );
+    }
+
+    @Test
+    void testCreateTaskWithoutLabels() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("title", "Task without labels");
+        payload.put("status", "draft");
+
+        var result = mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("title").isEqualTo("Task without labels"),
+                j -> j.node("status").isEqualTo("draft"),
+                j -> j.node("taskLabelIds").isArray().isEmpty()
         );
     }
 
@@ -384,7 +408,7 @@ class AppApplicationTests {
         var label = labelRepository.findByName("feature").orElseThrow();
 
         var task = new Task();
-        task.setName("Show task");
+        task.setTitle("Show task");
         task.setTaskStatus(status);
         task.setLabels(List.of(label));
 
@@ -398,8 +422,8 @@ class AppApplicationTests {
 
         assertThatJson(body).and(
                 j -> j.node("id").isEqualTo(task.getId().intValue()),
-                j -> j.node("name").isEqualTo("Show task"),
-                j -> j.node("labelIds").isArray()
+                j -> j.node("title").isEqualTo("Show task"),
+                j -> j.node("taskLabelIds").isArray()
         );
     }
 
@@ -421,15 +445,15 @@ class AppApplicationTests {
         var label = labelRepository.findByName("feature").orElseThrow();
 
         var task = new Task();
-        task.setName("Old name");
+        task.setTitle("Old name");
         task.setTaskStatus(status);
         task.setLabels(List.of(label));
 
         taskRepository.save(task);
 
         var payload = new HashMap<String, Object>();
-        payload.put("name", "New name");
-        payload.put("labelIds", List.of(label.getId()));
+        payload.put("title", "New name");
+        payload.put("taskLabelIds", List.of(label.getId()));
 
         var result = mockMvc.perform(put("/api/tasks/" + task.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -441,8 +465,8 @@ class AppApplicationTests {
 
         assertThatJson(body).and(
                 j -> j.node("id").isEqualTo(task.getId().intValue()),
-                j -> j.node("name").isEqualTo("New name"),
-                j -> j.node("labelIds").isArray()
+                j -> j.node("title").isEqualTo("New name"),
+                j -> j.node("taskLabelIds").isArray()
         );
     }
 
@@ -460,8 +484,8 @@ class AppApplicationTests {
     public void testCreateTaskValidationBlankName() throws Exception {
 
         var payload = new HashMap<String, Object>();
-        payload.put("name", "");
-        payload.put("taskStatusId", 1);
+        payload.put("title", "");
+        payload.put("status", "draft");
 
         mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -473,7 +497,7 @@ class AppApplicationTests {
     public void testCreateTaskValidationNoStatus() throws Exception {
 
         var payload = new HashMap<String, Object>();
-        payload.put("name", "Valid name");
+        payload.put("title", "Valid name");
 
         mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -580,7 +604,7 @@ class AppApplicationTests {
         label = labelRepository.save(label);
 
         var task = new Task();
-        task.setName("task");
+        task.setTitle("task");
         task.setTaskStatus(status);
         task.setLabels(List.of(label));
         taskRepository.save(task);
@@ -643,7 +667,7 @@ class AppApplicationTests {
         assertThatJson(body)
                 .isArray()
                 .satisfies(content -> assertThatJson(content)
-                        .node("[0].name")
+                        .node("[0].title")
                         .asString()
                         .contains("Create"));
     }
@@ -670,7 +694,7 @@ class AppApplicationTests {
                     for (Object item : content) {
 
                         assertThatJson(item)
-                                .node("assigneeId")
+                                .node("assignee_id")
                                 .isEqualTo(user.getId());
                     }
                 });
@@ -694,7 +718,7 @@ class AppApplicationTests {
                     assertThatJson(body)
                             .isArray()
                             .satisfies(content -> assertThatJson(content)
-                                    .node("[*].labelIds")
+                                    .node("[*].taskLabelIds")
                                     .matches(arr -> true));
                 });
     }
@@ -722,7 +746,7 @@ class AppApplicationTests {
                     assertThatJson(body)
                             .isArray()
                             .satisfies(content -> assertThatJson(content)
-                                    .node("[0].name")
+                                    .node("[0].title")
                                     .isPresent());
                 });
     }

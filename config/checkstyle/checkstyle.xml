@@ -197,7 +197,7 @@
         </module>
 
         <module name="SuppressionCommentFilter">
-            <property name="checkFormat" value="MethodLength"/>
+            <property name="checkFormat" value="MethodLength|MemberName"/>
         </module>
     </module>
 </module>

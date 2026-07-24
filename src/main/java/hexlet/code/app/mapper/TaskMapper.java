@@ -12,6 +12,8 @@ import hexlet.code.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class TaskMapper {
 
@@ -29,17 +31,18 @@ public class TaskMapper {
         taskDto.setId(task.getId());
         taskDto.setIndex(task.getIndex());
         taskDto.setCreatedAt(task.getCreatedAt());
-        taskDto.setName(task.getName());
-        taskDto.setDescription(task.getDescription());
+        taskDto.setTitle(task.getTitle());
+        taskDto.setContent(task.getContent());
         if (task.getAssignee() != null) {
-            taskDto.setAssigneeId(task.getAssignee().getId());
+            taskDto.setAssignee_id(task.getAssignee().getId());
         }
-        taskDto.setTaskStatusId(task.getTaskStatus().getId());
-        taskDto.setLabelIds(
-                task.getLabels()
-                        .stream()
-                        .map(Label::getId)
-                        .toList()
+        if (task.getTaskStatus() != null) {
+            taskDto.setStatus(task.getTaskStatus().getSlug());
+        }
+        taskDto.setTaskLabelIds(
+                task.getLabels() != null
+                        ? task.getLabels().stream().map(Label::getId).toList()
+                        : List.of()
         );
         return taskDto;
     }
@@ -47,24 +50,26 @@ public class TaskMapper {
     public Task toEntity(TaskCreateDTO taskCreateDTO) {
         var task = new Task();
         task.setIndex(taskCreateDTO.getIndex());
-        task.setName(taskCreateDTO.getName());
-        task.setDescription(taskCreateDTO.getDescription());
-        if (taskCreateDTO.getAssigneeId() != null) {
-            task.setAssignee(userRepository.findById(taskCreateDTO.getAssigneeId())
+        task.setTitle(taskCreateDTO.getTitle());
+        task.setContent(taskCreateDTO.getContent());
+        if (taskCreateDTO.getAssignee_id() != null) {
+            task.setAssignee(userRepository.findById(taskCreateDTO.getAssignee_id())
                             .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
         }
 
-        task.setTaskStatus(taskStatusRepository.findById(taskCreateDTO.getTaskStatusId())
+        task.setTaskStatus(taskStatusRepository.findBySlug(taskCreateDTO.getStatus())
                         .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
 
-        if (taskCreateDTO.getLabelIds() != null) {
+        if (taskCreateDTO.getTaskLabelIds() != null) {
 
-            var labels = labelRepository.findAllById(taskCreateDTO.getLabelIds());
+            var labels = labelRepository.findAllById(taskCreateDTO.getTaskLabelIds());
 
-            if (labels.size() != taskCreateDTO.getLabelIds().size()) {
+            if (labels.size() != taskCreateDTO.getTaskLabelIds().size()) {
                 throw new ResourceNotFoundException("One or more labels not found!");
             }
             task.setLabels(labels);
+        } else {
+            task.setLabels(List.of());
         }
 
         return task;
@@ -77,33 +82,36 @@ public class TaskMapper {
             task.setIndex(taskUpdateDTO.getIndex());
         }
 
-        if (taskUpdateDTO.getName() != null) {
-            task.setName(taskUpdateDTO.getName());
+        if (taskUpdateDTO.getTitle() != null) {
+            task.setTitle(taskUpdateDTO.getTitle());
         }
 
-        if (taskUpdateDTO.getDescription() != null) {
-            task.setDescription(taskUpdateDTO.getDescription());
-        }
+        task.setContent(taskUpdateDTO.getContent());
 
-        if (taskUpdateDTO.getAssigneeId() != null) {
-            task.setAssignee(userRepository.findById(taskUpdateDTO.getAssigneeId())
+        if (taskUpdateDTO.getAssignee_id() != null) {
+            task.setAssignee(userRepository.findById(taskUpdateDTO.getAssignee_id())
                     .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
+        } else {
+            task.setAssignee(null);
         }
 
-        if (taskUpdateDTO.getTaskStatusId() != null) {
-            task.setTaskStatus(taskStatusRepository.findById(taskUpdateDTO.getTaskStatusId())
+        if (taskUpdateDTO.getStatus() != null) {
+            task.setTaskStatus(taskStatusRepository.findBySlug(taskUpdateDTO.getStatus())
                     .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
         }
 
-        if (taskUpdateDTO.getLabelIds() != null) {
+        var taskLabelIds = taskUpdateDTO.getTaskLabelIds();
 
-            var labels = labelRepository.findAllById(taskUpdateDTO.getLabelIds());
+        if (taskLabelIds != null && !taskLabelIds.isEmpty()) {
+            var labels = labelRepository.findAllById(taskLabelIds);
 
-            if (labels.size() != taskUpdateDTO.getLabelIds().size()) {
+            if (labels.size() != taskLabelIds.size()) {
                 throw new ResourceNotFoundException("One or more labels not found!");
             }
 
             task.setLabels(labels);
+        } else {
+            task.setLabels(List.of());
         }
     }
 }

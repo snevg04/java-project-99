@@ -1,5 +1,6 @@
 package hexlet.code.app.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -36,9 +38,11 @@ public class Task implements BaseEntity {
 
     @NotNull
     @Size(min = 1)
-    private String name;
+    @Column(name = "name")
+    private String title;
 
-    private String description;
+    @Column(name = "description")
+    private String content;
 
     @ManyToOne
     private User assignee;
@@ -48,5 +52,5 @@ public class Task implements BaseEntity {
     private TaskStatus taskStatus;
 
     @ManyToMany
-    private List<Label> labels;
+    private List<Label> labels = new ArrayList<>();
 }
