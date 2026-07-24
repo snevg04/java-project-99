@@ -87,7 +87,9 @@ public class TaskMapper {
             task.setTitle(taskUpdateDTO.getTitle());
         }
 
-        task.setContent(taskUpdateDTO.getContent());
+        if (taskUpdateDTO.getContent() != null) {
+            task.setContent(taskUpdateDTO.getContent());
+        }
 
         if (taskUpdateDTO.getAssignee_id() != null) {
             task.setAssignee(userRepository.findById(taskUpdateDTO.getAssignee_id())
