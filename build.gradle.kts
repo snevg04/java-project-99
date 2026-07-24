@@ -69,6 +69,14 @@ sentry {
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
+if (System.getenv("SENTRY_AUTH_TOKEN") == null) {
+    tasks.configureEach {
+        if (name.lowercase().contains("sentryupload")) {
+            enabled = false
+        }
+    }
+}
+
 jacoco {
     toolVersion = "0.8.13"
 }
