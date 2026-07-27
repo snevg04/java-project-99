@@ -8,16 +8,17 @@ import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TaskMapper {
 
-    @Mapping(source = "assignee.id", target = "assignee_id")
+    @Mapping(source = "assignee.id", target = "assigneeId")
     @Mapping(source = "taskStatus.slug", target = "status")
     @Mapping(source = "labels", target = "taskLabelIds")
     TaskDTO toDTO(Task task);
 
-    default List<Long> mapLabels(List<Label> labels) {
+    default List<Long> mapLabels(Set<Label> labels) {
         return labels != null
                 ? labels.stream().map(Label::getId).toList()
                 : List.of();
