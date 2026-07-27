@@ -42,7 +42,7 @@ class UserControllerTest {
     private final Faker faker = new Faker();
 
     @Test
-    public void testIndexUsers() throws Exception {
+    void testIndexUsers() throws Exception {
         var result = mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -52,7 +52,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void testCreateUser() throws Exception {
+    void testCreateUser() throws Exception {
         var payload = new UserCreateDTO();
         payload.setFirstName(faker.name().firstName());
         payload.setLastName(faker.name().lastName());
@@ -83,7 +83,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void testShowUser() throws Exception {
+    void testShowUser() throws Exception {
 
         var user = new User();
         user.setFirstName(faker.name().firstName());
@@ -109,7 +109,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUser() throws Exception {
+    void testUpdateUser() throws Exception {
 
         var user = new User();
         user.setFirstName(faker.name().firstName());
@@ -143,7 +143,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void testDeleteUser() throws Exception {
+    void testDeleteUser() throws Exception {
 
         var user = new User();
         user.setFirstName(faker.name().firstName());
@@ -170,16 +170,16 @@ class UserControllerTest {
         user.setEmail(faker.internet().emailAddress());
         user.setPasswordDigest(faker.internet().password(8, 12));
 
-        var saved = userRepository.save(user);
+        var savedUser = userRepository.save(user);
 
         var payload = new HashMap<String, Object>();
         payload.put("firstName", "Updated Name");
 
-        mockMvc.perform(put("/api/users/" + saved.getId())
+        mockMvc.perform(put("/api/users/" + savedUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(payload)))
                 .andExpect(status().isOk());
-        var reloaded = userRepository.findById(saved.getId()).orElseThrow();
+        var reloaded = userRepository.findById(savedUser.getId()).orElseThrow();
 
         assertThat(reloaded.getEmail()).isEqualTo(user.getEmail());
         assertThat(reloaded.getFirstName()).isEqualTo("Updated Name");

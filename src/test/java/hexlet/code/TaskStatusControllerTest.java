@@ -37,7 +37,7 @@ class TaskStatusControllerTest {
     private TaskStatusRepository taskStatusRepository;
 
     @Test
-    public void testIndexTaskStatuses() throws Exception {
+    void testIndexTaskStatuses() throws Exception {
 
         mockMvc.perform(get("/api/task_statuses"))
                 .andExpect(status().isOk())
@@ -48,7 +48,7 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    public void testCreateTaskStatus() throws Exception {
+    void testCreateTaskStatus() throws Exception {
         var payload = new TaskStatusCreateDTO();
         payload.setName("New");
         payload.setSlug("new");
@@ -68,20 +68,20 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    public void testShowTaskStatus() throws Exception {
+    void testShowTaskStatus() throws Exception {
 
         var status = new TaskStatus();
         status.setName("Work-in-progress");
         status.setSlug("work_in_progress");
 
-        var saved = taskStatusRepository.save(status);
+        var savedTaskStatus = taskStatusRepository.save(status);
 
-        var result = mockMvc.perform(get("/api/task_statuses/" + saved.getId()))
+        var result = mockMvc.perform(get("/api/task_statuses/" + savedTaskStatus.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
         assertThatJson(result.getResponse().getContentAsString()).and(
-                json -> json.node("id").isEqualTo(saved.getId()),
+                json -> json.node("id").isEqualTo(savedTaskStatus.getId()),
                 json -> json.node("name").isEqualTo("Work-in-progress"),
                 json -> json.node("slug").isEqualTo("work_in_progress"),
                 json -> json.node("createdAt").isPresent()
@@ -89,48 +89,48 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    public void testUpdateTaskStatus() throws Exception {
+    void testUpdateTaskStatus() throws Exception {
 
         var status = new TaskStatus();
         status.setName("Old");
         status.setSlug("old");
 
-        var saved = taskStatusRepository.save(status);
+        var savedTaskStatus = taskStatusRepository.save(status);
 
         var payload = new TaskStatusUpdateDTO();
         payload.setName("Updated");
 
-        var result = mockMvc.perform(put("/api/task_statuses/" + saved.getId())
+        var result = mockMvc.perform(put("/api/task_statuses/" + savedTaskStatus.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(payload)))
                 .andExpect(status().isOk())
                 .andReturn();
 
         assertThatJson(result.getResponse().getContentAsString()).and(
-                json -> json.node("id").isEqualTo(saved.getId()),
+                json -> json.node("id").isEqualTo(savedTaskStatus.getId()),
                 json -> json.node("name").isEqualTo("Updated"),
                 json -> json.node("slug").isEqualTo("old")
         );
     }
 
     @Test
-    public void testDeleteTaskStatus() throws Exception {
+    void testDeleteTaskStatus() throws Exception {
 
         var status = new TaskStatus();
         status.setName("Temp");
         status.setSlug("temp");
 
-        var saved = taskStatusRepository.save(status);
+        var savedTaskStatus = taskStatusRepository.save(status);
 
-        mockMvc.perform(delete("/api/task_statuses/" + saved.getId()))
+        mockMvc.perform(delete("/api/task_statuses/" + savedTaskStatus.getId()))
                 .andExpect(status().isNoContent());
 
-        assertThat(taskStatusRepository.findById(saved.getId())).isEmpty();
+        assertThat(taskStatusRepository.findById(savedTaskStatus.getId())).isEmpty();
     }
 
     @Test
     @WithMockUser
-    public void testCreateValidationNameBlank() throws Exception {
+    void testCreateValidationNameBlank() throws Exception {
 
         var payload = new TaskStatusCreateDTO();
         payload.setName("");
@@ -150,7 +150,7 @@ class TaskStatusControllerTest {
 
     @Test
     @WithMockUser
-    public void testCreateValidationSlugBlank() throws Exception {
+    void testCreateValidationSlugBlank() throws Exception {
 
         var payload = new TaskStatusCreateDTO();
         payload.setName("Valid Name");

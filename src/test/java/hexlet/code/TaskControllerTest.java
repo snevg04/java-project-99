@@ -190,7 +190,7 @@ class TaskControllerTest {
     }
 
     @Test
-    public void testCreateTaskValidationBlankName() throws Exception {
+    void testCreateTaskValidationBlankName() throws Exception {
 
         var payload = new HashMap<String, Object>();
         payload.put("title", "");
@@ -203,7 +203,7 @@ class TaskControllerTest {
     }
 
     @Test
-    public void testCreateTaskValidationNoStatus() throws Exception {
+    void testCreateTaskValidationNoStatus() throws Exception {
 
         var payload = new HashMap<String, Object>();
         payload.put("title", "Valid name");
@@ -250,15 +250,10 @@ class TaskControllerTest {
 
         var body = result.getResponse().getContentAsString();
 
-        System.out.println(body);
-
         assertThatJson(body)
                 .isArray()
                 .satisfies(content -> {
-
-                    // content — это JSON array
                     for (Object item : content) {
-
                         assertThatJson(item)
                                 .node("assigneeId")
                                 .isEqualTo(user.getId());

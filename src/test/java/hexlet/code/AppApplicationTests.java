@@ -19,7 +19,7 @@ class AppApplicationTests {
     private MockMvc mockMvc;
 
     @Test
-    public void testWelcome() throws Exception {
+    void testWelcome() throws Exception {
         mockMvc.perform(get("/welcome"))
                 .andExpect(status().isOk());
     }
