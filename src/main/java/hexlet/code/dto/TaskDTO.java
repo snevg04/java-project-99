@@ -15,9 +15,7 @@ public class TaskDTO {
     private LocalDate createdAt;
     private String title;
     private String content;
-    // CHECKSTYLE:OFF
     private Long assignee_id;
-    // CHECKSTYLE:ON
     private String status;
     private List<Long> taskLabelIds = new ArrayList<>();
 }

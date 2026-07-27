@@ -14,9 +14,8 @@ public class TaskCreateDTO {
     @NotBlank
     private String title;
     private String content;
-    // CHECKSTYLE:OFF
     private Long assignee_id;
-    // CHECKSTYLE:ON
+
     @NotBlank
     private String status;
     private List<Long> taskLabelIds;
