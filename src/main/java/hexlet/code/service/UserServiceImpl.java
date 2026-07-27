@@ -1,0 +1,66 @@
+package hexlet.code.service;
+
+import hexlet.code.dto.UserCreateDTO;
+import hexlet.code.dto.UserDTO;
+import hexlet.code.dto.UserUpdateDTO;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.UserMapper;
+import hexlet.code.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final UserMapper userMapper;
+
+    @Override
+    public List<UserDTO> getAll() {
+        var users = userRepository.findAll();
+        return users.stream()
+                .map(userMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public UserDTO createUser(UserCreateDTO userCreateDTO) {
+        var user = userMapper.toEntity(userCreateDTO);
+        user.setPasswordDigest(
+                passwordEncoder.encode(userCreateDTO.getPassword())
+        );
+
+        var savedUser = userRepository.save(user);
+        return userMapper.toDTO(savedUser);
+    }
+
+    @Override
+    public UserDTO showUser(Long id) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        return userMapper.toDTO(user);
+    }
+
+    @Override
+    public UserDTO updateUser(UserUpdateDTO userUpdateDTO, Long id) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        userMapper.updateEntity(userUpdateDTO, user);
+        var savedUser = userRepository.save(user);
+        return userMapper.toDTO(savedUser);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        userRepository.delete(user);
+    }
+}
