@@ -180,6 +180,146 @@ class TaskControllerTest {
     }
 
     @Test
+    void testUpdateTaskNotFound() throws Exception {
+
+        var payload = new HashMap<String, Object>();
+        payload.put("title", "New name");
+
+        mockMvc.perform(put("/api/tasks/99999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testUpdateWithNonExistentAssigneeId() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
+
+        var task = new Task();
+        task.setTitle("Task for assignee test");
+        task.setTaskStatus(status);
+        task.setLabels(Set.of(label));
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("assigneeId", 99999);
+
+        mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testUpdateWithNonExistentStatus() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
+
+        var task = new Task();
+        task.setTitle("Task for status test");
+        task.setTaskStatus(status);
+        task.setLabels(Set.of(label));
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("status", "nonexistent_slug");
+
+        mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testUpdateWithNonExistentLabelIds() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
+
+        var task = new Task();
+        task.setTitle("Task for label test");
+        task.setTaskStatus(status);
+        task.setLabels(Set.of(label));
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("taskLabelIds", List.of(99999L));
+
+        mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testUpdateWithNullFieldsPreservesExisting() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
+        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+
+        var task = new Task();
+        task.setTitle("Original title");
+        task.setContent("Original content");
+        task.setIndex(42);
+        task.setAssignee(user);
+        task.setTaskStatus(status);
+        task.setLabels(Set.of(label));
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+
+        var result = mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("title").isEqualTo("Original title"),
+                j -> j.node("content").isEqualTo("Original content"),
+                j -> j.node("index").isEqualTo(42),
+                j -> j.node("assigneeId").isEqualTo(user.getId()),
+                j -> j.node("status").isEqualTo(status.getSlug()),
+                j -> j.node("taskLabelIds").isArray().contains(label.getId())
+        );
+    }
+
+    @Test
+    void testUpdateLabelsToEmptyList() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var label = labelRepository.findByName("feature").orElseThrow();
+
+        var task = new Task();
+        task.setTitle("Task with labels");
+        task.setTaskStatus(status);
+        task.setLabels(Set.of(label));
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("taskLabelIds", List.of());
+
+        var result = mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("title").isEqualTo("Task with labels"),
+                j -> j.node("taskLabelIds").isArray().isEmpty()
+        );
+    }
+
+    @Test
     void testDeleteTask() throws Exception {
 
         mockMvc.perform(delete("/api/tasks/1"))
