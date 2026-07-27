@@ -93,3 +93,7 @@ tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)
 }
+
+tasks.named<Jar>("jar") {
+    enabled = false
+}
