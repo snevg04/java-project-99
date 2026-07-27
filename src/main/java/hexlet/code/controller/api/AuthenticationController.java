@@ -17,7 +17,7 @@ public class AuthenticationController {
 
     private final JWTUtils jwtUtils;
 
-     private final AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
     public String create(@RequestBody AuthRequest authRequest) {
