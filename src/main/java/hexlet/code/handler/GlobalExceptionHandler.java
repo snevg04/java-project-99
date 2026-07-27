@@ -3,8 +3,11 @@ package hexlet.code.handler;
 import hexlet.code.exception.ConflictException;
 import hexlet.code.exception.LabelInUseException;
 import hexlet.code.exception.ResourceNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -43,5 +47,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleLabelInUseException(LabelInUseException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex) {
+        log.error("Exception occurred", ex);
+
+        if (ex instanceof AuthenticationException) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized");
+        }
+
+        if (ex instanceof AccessDeniedException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Forbidden");
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal server error");
     }
 }
