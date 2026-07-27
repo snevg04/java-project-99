@@ -15,7 +15,7 @@ public class TaskDTO {
     private LocalDate createdAt;
     private String title;
     private String content;
-    private Long assignee_id;
+    private Long assigneeId;
     private String status;
     private List<Long> taskLabelIds = new ArrayList<>();
 }
