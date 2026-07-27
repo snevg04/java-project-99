@@ -4,29 +4,19 @@ import hexlet.code.dto.LabelCreateDTO;
 import hexlet.code.dto.LabelDTO;
 import hexlet.code.dto.LabelUpdateDTO;
 import hexlet.code.model.Label;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Component
-public class LabelMapper {
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public interface LabelMapper {
 
-    public LabelDTO toDTO(Label label) {
-        var labelDto = new LabelDTO();
-        labelDto.setId(label.getId());
-        labelDto.setName(label.getName());
-        labelDto.setCreatedAt(label.getCreatedAt());
-        return labelDto;
-    }
+    LabelDTO toDTO(Label label);
 
-    public Label toEntity(LabelCreateDTO labelCreateDTO) {
-        var label = new Label();
-        label.setName(labelCreateDTO.getName());
-        return label;
-    }
+    Label toEntity(LabelCreateDTO dto);
 
-    public void updateEntity(LabelUpdateDTO labelUpdateDTO, Label label) {
-
-        if (labelUpdateDTO.getName() != null) {
-            label.setName(labelUpdateDTO.getName());
-        }
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    void updateEntity(LabelUpdateDTO dto, @MappingTarget Label label);
 }

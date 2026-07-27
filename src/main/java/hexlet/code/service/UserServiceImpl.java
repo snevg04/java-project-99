@@ -53,6 +53,11 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
         userMapper.updateEntity(userUpdateDTO, user);
+
+        if (userUpdateDTO.getPassword() != null) {
+            user.setPasswordDigest(passwordEncoder.encode(userUpdateDTO.getPassword()));
+        }
+
         var savedUser = userRepository.save(user);
         return userMapper.toDTO(savedUser);
     }
