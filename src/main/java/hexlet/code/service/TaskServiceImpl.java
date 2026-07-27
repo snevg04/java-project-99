@@ -15,7 +15,7 @@ import hexlet.code.specification.TaskSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -72,8 +72,8 @@ public class TaskServiceImpl implements TaskService {
         task.setTitle(dto.getTitle());
         task.setContent(dto.getContent());
 
-        if (dto.getAssignee_id() != null) {
-            task.setAssignee(userRepository.findById(dto.getAssignee_id())
+        if (dto.getAssigneeId() != null) {
+            task.setAssignee(userRepository.findById(dto.getAssigneeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
         }
 
@@ -85,9 +85,9 @@ public class TaskServiceImpl implements TaskService {
             if (labels.size() != dto.getTaskLabelIds().size()) {
                 throw new ResourceNotFoundException("One or more labels not found!");
             }
-            task.setLabels(labels);
+            task.setLabels(new HashSet<>(labels));
         } else {
-            task.setLabels(new ArrayList<>());
+            task.setLabels(new HashSet<>());
         }
 
         return task;
@@ -103,8 +103,8 @@ public class TaskServiceImpl implements TaskService {
         if (dto.getContent() != null) {
             task.setContent(dto.getContent());
         }
-        if (dto.getAssignee_id() != null) {
-            task.setAssignee(userRepository.findById(dto.getAssignee_id())
+        if (dto.getAssigneeId() != null) {
+            task.setAssignee(userRepository.findById(dto.getAssigneeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
         }
         if (dto.getStatus() != null) {
@@ -115,13 +115,13 @@ public class TaskServiceImpl implements TaskService {
         var taskLabelIds = dto.getTaskLabelIds();
         if (taskLabelIds != null) {
             if (taskLabelIds.isEmpty()) {
-                task.setLabels(new ArrayList<>());
+                task.setLabels(new HashSet<>());
             } else {
                 var labels = labelRepository.findAllById(taskLabelIds);
                 if (labels.size() != taskLabelIds.size()) {
                     throw new ResourceNotFoundException("One or more labels not found!");
                 }
-                task.setLabels(labels);
+                task.setLabels(new HashSet<>(labels));
             }
         }
     }
