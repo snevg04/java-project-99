@@ -34,6 +34,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -67,7 +68,7 @@ class AppApplicationTests {
         task.setIndex(1);
         task.setAssignee(user);
         task.setTaskStatus(status);
-        task.setLabels(List.of(label));
+        task.setLabels(Set.of(label));
         return taskRepository.save(task);
     }
 
@@ -410,7 +411,7 @@ class AppApplicationTests {
         var task = new Task();
         task.setTitle("Show task");
         task.setTaskStatus(status);
-        task.setLabels(List.of(label));
+        task.setLabels(Set.of(label));
 
         taskRepository.save(task);
 
@@ -447,7 +448,7 @@ class AppApplicationTests {
         var task = new Task();
         task.setTitle("Old name");
         task.setTaskStatus(status);
-        task.setLabels(List.of(label));
+        task.setLabels(Set.of(label));
 
         taskRepository.save(task);
 
@@ -606,7 +607,7 @@ class AppApplicationTests {
         var task = new Task();
         task.setTitle("task");
         task.setTaskStatus(status);
-        task.setLabels(List.of(label));
+        task.setLabels(Set.of(label));
         taskRepository.save(task);
 
         mockMvc.perform(delete("/api/labels/" + label.getId()))
@@ -694,7 +695,7 @@ class AppApplicationTests {
                     for (Object item : content) {
 
                         assertThatJson(item)
-                                .node("assignee_id")
+                                .node("assigneeId")
                                 .isEqualTo(user.getId());
                     }
                 });
