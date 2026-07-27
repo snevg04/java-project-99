@@ -11,4 +11,5 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificationExecutor<Task> {
     @EntityGraph(attributePaths = {"taskStatus", "assignee", "labels"})
     List<Task> findAll(Specification<Task> spec);
+    boolean existsByTaskStatusId(Long id);
 }

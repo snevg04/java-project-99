@@ -3,6 +3,7 @@ package hexlet.code.service;
 import hexlet.code.dto.LabelCreateDTO;
 import hexlet.code.dto.LabelDTO;
 import hexlet.code.dto.LabelUpdateDTO;
+import hexlet.code.exception.ConflictException;
 import hexlet.code.exception.LabelInUseException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.LabelMapper;
@@ -30,6 +31,9 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     public LabelDTO createLabel(LabelCreateDTO labelCreateDTO) {
+        if (labelRepository.existsByName(labelCreateDTO.getName())) {
+            throw new ConflictException("Label with given name already exists!");
+        }
         var label = labelMapper.toEntity(labelCreateDTO);
         var savedLabel = labelRepository.save(label);
         return labelMapper.toDTO(savedLabel);
