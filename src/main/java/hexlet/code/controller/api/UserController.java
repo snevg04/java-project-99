@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 
 import java.util.List;
@@ -52,11 +53,14 @@ public class UserController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@userUtils.isAuthor(#id)")
     public UserDTO update(@Valid @RequestBody UserUpdateDTO userUpdateDTO, @PathVariable Long id) {
         return userService.updateUser(userUpdateDTO, id);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@userUtils.isAuthor(#id)")
     public ResponseEntity<UserDTO> delete(@PathVariable Long id) {
         var userDTO = userService.deleteUser(id);
         return ResponseEntity.ok(userDTO);

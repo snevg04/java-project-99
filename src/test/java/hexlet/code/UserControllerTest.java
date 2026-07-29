@@ -21,12 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
+@Transactional
 @WithMockUser(username = "hexlet@example.com")
 class UserControllerTest {
 
@@ -111,13 +113,7 @@ class UserControllerTest {
     @Test
     void testUpdateUser() throws Exception {
 
-        var user = new User();
-        user.setFirstName(faker.name().firstName());
-        user.setLastName(faker.name().lastName());
-        user.setEmail(faker.internet().emailAddress());
-        user.setPasswordDigest("test-password");
-
-        var savedUser = userRepository.save(user);
+        var savedUser = userRepository.findByEmail("hexlet@example.com").orElseThrow();
         var userId = savedUser.getId();
 
         var payload = new HashMap<String, Object>();
@@ -145,13 +141,7 @@ class UserControllerTest {
     @Test
     void testDeleteUser() throws Exception {
 
-        var user = new User();
-        user.setFirstName(faker.name().firstName());
-        user.setLastName(faker.name().lastName());
-        user.setEmail(faker.internet().emailAddress());
-        user.setPasswordDigest("test-password");
-
-        var savedUser = userRepository.save(user);
+        var savedUser = userRepository.findByEmail("hexlet@example.com").orElseThrow();
         var id = savedUser.getId();
 
         mockMvc.perform(delete("/api/users/" + id))
@@ -167,7 +157,7 @@ class UserControllerTest {
         var user = new User();
         user.setFirstName(faker.name().firstName());
         user.setLastName(faker.name().lastName());
-        user.setEmail(faker.internet().emailAddress());
+        user.setEmail("test");
         user.setPasswordDigest(faker.internet().password(8, 12));
 
         var savedUser = userRepository.save(user);
