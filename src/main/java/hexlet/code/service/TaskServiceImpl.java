@@ -6,7 +6,6 @@ import hexlet.code.dto.TaskParamsDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskMapper;
-import hexlet.code.model.Task;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
@@ -39,44 +38,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public TaskDTO createTask(TaskCreateDTO taskCreateDTO) {
-        var task = toEntity(taskCreateDTO);
-        var savedTask = taskRepository.save(task);
-        return taskMapper.toDTO(savedTask);
-    }
-
-    @Override
-    public TaskDTO getTaskById(Long id) {
-        var task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
-        return taskMapper.toDTO(task);
-    }
-
-    @Override
-    @Transactional
-    public TaskDTO updateTask(TaskUpdateDTO taskUpdateDTO, Long id) {
-        var task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
-        updateEntity(taskUpdateDTO, task);
-        var updatedTask = taskRepository.save(task);
-        return taskMapper.toDTO(updatedTask);
-    }
-
-    @Override
-    @Transactional
-    public TaskDTO deleteTask(Long id) {
-        var task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
-        var taskDTO = taskMapper.toDTO(task);
-        taskRepository.delete(task);
-        return taskDTO;
-    }
-
-    private Task toEntity(TaskCreateDTO dto) {
-        var task = new Task();
-        task.setIndex(dto.getIndex());
-        task.setTitle(dto.getTitle());
-        task.setContent(dto.getContent());
+    public TaskDTO createTask(TaskCreateDTO dto) {
+        var task = taskMapper.toEntity(dto);
 
         if (dto.getAssigneeId() != null) {
             task.setAssignee(userRepository.findById(dto.getAssigneeId())
@@ -96,25 +59,32 @@ public class TaskServiceImpl implements TaskService {
             task.setLabels(new HashSet<>());
         }
 
-        return task;
+        var savedTask = taskRepository.save(task);
+        return taskMapper.toDTO(savedTask);
     }
 
-    private void updateEntity(TaskUpdateDTO dto, Task task) {
-        if (dto.isIndexUpdated()) {
-            task.setIndex(dto.getIndex());
-        }
-        if (dto.getTitle() != null) {
-            task.setTitle(dto.getTitle());
-        }
-        if (dto.isContentUpdated()) {
-            task.setContent(dto.getContent());
-        }
+    @Override
+    public TaskDTO getTaskById(Long id) {
+        var task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
+        return taskMapper.toDTO(task);
+    }
+
+    @Override
+    @Transactional
+    public TaskDTO updateTask(TaskUpdateDTO dto, Long id) {
+        var task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
+
+        taskMapper.updateEntity(dto, task);
+
         if (dto.isAssigneeIdUpdated()) {
             task.setAssignee(dto.getAssigneeId() != null
                     ? userRepository.findById(dto.getAssigneeId())
                             .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!"))
                     : null);
         }
+
         if (dto.getStatus() != null) {
             task.setTaskStatus(taskStatusRepository.findBySlug(dto.getStatus())
                     .orElseThrow(() -> new ResourceNotFoundException("Task status not found!")));
@@ -132,5 +102,18 @@ public class TaskServiceImpl implements TaskService {
                 task.setLabels(new HashSet<>(labels));
             }
         }
+
+        var updatedTask = taskRepository.save(task);
+        return taskMapper.toDTO(updatedTask);
+    }
+
+    @Override
+    @Transactional
+    public TaskDTO deleteTask(Long id) {
+        var task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
+        var taskDTO = taskMapper.toDTO(task);
+        taskRepository.delete(task);
+        return taskDTO;
     }
 }
