@@ -56,7 +56,6 @@ class TaskControllerTest {
         Task task = new Task();
         task.setTitle(title);
         task.setContent("Description");
-        task.setIndex(1);
         task.setAssignee(user);
         task.setTaskStatus(status);
         task.setLabels(Set.of(label));
@@ -68,7 +67,6 @@ class TaskControllerTest {
 
         var payload = new HashMap<String, Object>();
         payload.put("title", "Test task");
-        payload.put("index", 10);
         payload.put("content", "desc");
         payload.put("status", "draft");
         payload.put("taskLabelIds", List.of(1L));
@@ -316,6 +314,34 @@ class TaskControllerTest {
         assertThatJson(body).and(
                 j -> j.node("title").isEqualTo("Task with labels"),
                 j -> j.node("taskLabelIds").isArray().isEmpty()
+        );
+    }
+
+    @Test
+    void testUpdateContentToNull() throws Exception {
+
+        var status = taskStatusRepository.findById(1L).orElseThrow();
+
+        var task = new Task();
+        task.setTitle("Task with content");
+        task.setContent("Some description");
+        task.setTaskStatus(status);
+        taskRepository.save(task);
+
+        var payload = new HashMap<String, Object>();
+        payload.put("content", null);
+
+        var result = mockMvc.perform(put("/api/tasks/" + task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).and(
+                j -> j.node("title").isEqualTo("Task with content"),
+                j -> j.node("content").isNull()
         );
     }
 

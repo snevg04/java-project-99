@@ -41,6 +41,10 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO createTask(TaskCreateDTO dto) {
         var task = taskMapper.toEntity(dto);
 
+        if (dto.getIndex() == null) {
+            task.setIndex(taskRepository.getMaxIndex() + 1);
+        }
+
         if (dto.getAssigneeId() != null) {
             task.setAssignee(userRepository.findById(dto.getAssigneeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
@@ -77,6 +81,10 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
 
         taskMapper.updateEntity(dto, task);
+
+        if (dto.isContentUpdated()) {
+            task.setContent(dto.getContent());
+        }
 
         if (dto.isAssigneeIdUpdated()) {
             task.setAssignee(dto.getAssigneeId() != null
