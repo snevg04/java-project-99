@@ -4,8 +4,8 @@
 build:
 	./gradlew build
 
-run-dist:
-	build/install/app/bin/app
+run:
+	./gradlew bootRun
 
 .PHONY: jacoco
 report:
