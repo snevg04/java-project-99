@@ -57,6 +57,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
         userMapper.updateEntity(userUpdateDTO, user);
 
+        if (userUpdateDTO.isFirstNameUpdated()) {
+            user.setFirstName(userUpdateDTO.getFirstName());
+        }
+        if (userUpdateDTO.isLastNameUpdated()) {
+            user.setLastName(userUpdateDTO.getLastName());
+        }
+
         if (userUpdateDTO.getPassword() != null) {
             user.setPasswordDigest(passwordEncoder.encode(userUpdateDTO.getPassword()));
         }
@@ -67,9 +74,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUser(Long id) {
+    public UserDTO deleteUser(Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        var userDTO = userMapper.toDTO(user);
         userRepository.delete(user);
+        return userDTO;
     }
 }

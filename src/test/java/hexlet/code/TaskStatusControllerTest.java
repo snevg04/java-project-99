@@ -123,7 +123,7 @@ class TaskStatusControllerTest {
         var savedTaskStatus = taskStatusRepository.save(status);
 
         mockMvc.perform(delete("/api/task_statuses/" + savedTaskStatus.getId()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         assertThat(taskStatusRepository.findById(savedTaskStatus.getId())).isEmpty();
     }

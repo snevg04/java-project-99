@@ -63,10 +63,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void deleteTask(Long id) {
+    @Transactional
+    public TaskDTO deleteTask(Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
+        var taskDTO = taskMapper.toDTO(task);
         taskRepository.delete(task);
+        return taskDTO;
     }
 
     private Task toEntity(TaskCreateDTO dto) {
@@ -97,13 +100,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateEntity(TaskUpdateDTO dto, Task task) {
-        if (dto.getIndex() != null) {
+        if (dto.isIndexUpdated()) {
             task.setIndex(dto.getIndex());
         }
         if (dto.getTitle() != null) {
             task.setTitle(dto.getTitle());
         }
-        if (dto.getContent() != null) {
+        if (dto.isContentUpdated()) {
             task.setContent(dto.getContent());
         }
         if (dto.isAssigneeIdUpdated()) {

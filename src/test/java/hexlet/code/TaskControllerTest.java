@@ -323,7 +323,7 @@ class TaskControllerTest {
     void testDeleteTask() throws Exception {
 
         mockMvc.perform(delete("/api/tasks/1"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/tasks/1"))
                 .andExpect(status().isNotFound());

@@ -58,7 +58,7 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     @Transactional
-    public void deleteLabel(Long id) {
+    public LabelDTO deleteLabel(Long id) {
         var label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Label not found!"));
 
@@ -66,6 +66,8 @@ public class LabelServiceImpl implements LabelService {
             throw new LabelInUseException("Label is used by tasks");
         }
 
+        var labelDTO = labelMapper.toDTO(label);
         labelRepository.deleteById(id);
+        return labelDTO;
     }
 }

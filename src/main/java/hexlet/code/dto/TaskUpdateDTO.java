@@ -12,9 +12,19 @@ import java.util.List;
 @Setter
 @Getter
 public class TaskUpdateDTO {
+    @Setter(AccessLevel.NONE)
     private Integer index;
+
+    @JsonIgnore
+    private boolean indexUpdated;
+
     private String title;
+
+    @Setter(AccessLevel.NONE)
     private String content;
+
+    @JsonIgnore
+    private boolean contentUpdated;
 
     @Setter(AccessLevel.NONE)
     @JsonProperty("assignee_id")
@@ -31,5 +41,15 @@ public class TaskUpdateDTO {
     public void setAssigneeId(Long assigneeId) {
         this.assigneeId = assigneeId;
         this.assigneeIdUpdated = true;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+        this.indexUpdated = true;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+        this.contentUpdated = true;
     }
 }

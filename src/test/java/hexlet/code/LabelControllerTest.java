@@ -128,7 +128,7 @@ class LabelControllerTest {
         labelRepository.save(label);
 
         mockMvc.perform(delete("/api/labels/" + label.getId()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/labels/" + label.getId()))
                 .andExpect(status().isNotFound());

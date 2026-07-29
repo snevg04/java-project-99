@@ -52,8 +52,8 @@ public class TaskStatusController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        taskStatusService.deleteTaskStatus(id);
+    public ResponseEntity<TaskStatusDTO> delete(@PathVariable Long id) {
+        var taskStatusDTO = taskStatusService.deleteTaskStatus(id);
+        return ResponseEntity.ok(taskStatusDTO);
     }
 }

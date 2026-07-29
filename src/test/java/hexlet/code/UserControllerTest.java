@@ -155,7 +155,7 @@ class UserControllerTest {
         var id = savedUser.getId();
 
         mockMvc.perform(delete("/api/users/" + id))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         assertThat(userRepository.findById(id)).isEmpty();
     }

@@ -65,12 +65,14 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     @Override
     @Transactional
-    public void deleteTaskStatus(Long id) {
+    public TaskStatusDTO deleteTaskStatus(Long id) {
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task status not found!"));
         if (taskRepository.existsByTaskStatusId(id)) {
             throw new ConflictException("Task status is used by tasks!");
         }
+        var taskStatusDTO = taskStatusMapper.toDTO(taskStatus);
         taskStatusRepository.delete(taskStatus);
+        return taskStatusDTO;
     }
 }

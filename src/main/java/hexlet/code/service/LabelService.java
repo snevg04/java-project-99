@@ -11,5 +11,5 @@ public interface LabelService {
     LabelDTO createLabel(LabelCreateDTO labelCreateDTO);
     LabelDTO getLabel(Long id);
     LabelDTO updateLabel(LabelUpdateDTO labelUpdateDTO, Long id);
-    void deleteLabel(Long id);
+    LabelDTO deleteLabel(Long id);
 }

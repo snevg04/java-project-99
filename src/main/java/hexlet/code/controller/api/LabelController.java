@@ -52,8 +52,8 @@ public class LabelController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        labelService.deleteLabel(id);
+    public ResponseEntity<LabelDTO> delete(@PathVariable Long id) {
+        var labelDTO = labelService.deleteLabel(id);
+        return ResponseEntity.ok(labelDTO);
     }
 }
