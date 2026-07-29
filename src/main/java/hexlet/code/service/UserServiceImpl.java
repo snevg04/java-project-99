@@ -9,6 +9,7 @@ import hexlet.code.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         var user = userMapper.toEntity(userCreateDTO);
         user.setPasswordDigest(
@@ -49,6 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updateUser(UserUpdateDTO userUpdateDTO, Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
@@ -63,6 +66,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));

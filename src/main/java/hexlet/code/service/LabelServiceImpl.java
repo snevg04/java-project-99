@@ -10,6 +10,7 @@ import hexlet.code.mapper.LabelMapper;
 import hexlet.code.repository.LabelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
+    @Transactional
     public void deleteLabel(Long id) {
         var label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Label not found!"));

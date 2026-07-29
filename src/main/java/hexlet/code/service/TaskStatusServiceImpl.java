@@ -10,6 +10,7 @@ import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     private final TaskRepository taskRepository;
 
     @Override
+    @Transactional
     public TaskStatusDTO createTaskStatus(TaskStatusCreateDTO taskStatusCreateDTO) {
         if (
                 taskStatusRepository.existsBySlug(taskStatusCreateDTO.getSlug())
@@ -52,6 +54,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     }
 
     @Override
+    @Transactional
     public TaskStatusDTO updateTaskStatus(TaskStatusUpdateDTO taskStatusUpdateDTO, Long id) {
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task status not found!"));
@@ -61,6 +64,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     }
 
     @Override
+    @Transactional
     public void deleteTaskStatus(Long id) {
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task status not found!"));

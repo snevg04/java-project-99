@@ -14,6 +14,7 @@ import hexlet.code.repository.UserRepository;
 import hexlet.code.specification.TaskSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDTO createTask(TaskCreateDTO taskCreateDTO) {
         var task = toEntity(taskCreateDTO);
         var savedTask = taskRepository.save(task);
@@ -51,6 +53,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDTO updateTask(TaskUpdateDTO taskUpdateDTO, Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found!"));
@@ -103,9 +106,11 @@ public class TaskServiceImpl implements TaskService {
         if (dto.getContent() != null) {
             task.setContent(dto.getContent());
         }
-        if (dto.getAssigneeId() != null) {
-            task.setAssignee(userRepository.findById(dto.getAssigneeId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
+        if (dto.isAssigneeIdUpdated()) {
+            task.setAssignee(dto.getAssigneeId() != null
+                    ? userRepository.findById(dto.getAssigneeId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!"))
+                    : null);
         }
         if (dto.getStatus() != null) {
             task.setTaskStatus(taskStatusRepository.findBySlug(dto.getStatus())

@@ -284,7 +284,7 @@ class TaskControllerTest {
                 j -> j.node("title").isEqualTo("Original title"),
                 j -> j.node("content").isEqualTo("Original content"),
                 j -> j.node("index").isEqualTo(42),
-                j -> j.node("assigneeId").isEqualTo(user.getId()),
+                j -> j.node("assignee_id").isEqualTo(user.getId()),
                 j -> j.node("status").isEqualTo(status.getSlug()),
                 j -> j.node("taskLabelIds").isArray().contains(label.getId())
         );
@@ -395,7 +395,7 @@ class TaskControllerTest {
                 .satisfies(content -> {
                     for (Object item : content) {
                         assertThatJson(item)
-                                .node("assigneeId")
+                                .node("assignee_id")
                                 .isEqualTo(user.getId());
                     }
                 });
