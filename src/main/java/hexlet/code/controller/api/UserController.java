@@ -59,11 +59,11 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@userUtils.isAuthor(#id)")
-    public ResponseEntity<UserDTO> delete(@PathVariable Long id) {
-        var userDTO = userService.deleteUser(id);
-        return ResponseEntity.ok(userDTO);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
