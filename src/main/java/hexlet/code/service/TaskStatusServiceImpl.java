@@ -3,10 +3,8 @@ package hexlet.code.service;
 import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.TaskStatusDTO;
 import hexlet.code.dto.TaskStatusUpdateDTO;
-import hexlet.code.exception.ConflictException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskStatusMapper;
-import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,17 +20,9 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     private final TaskStatusMapper taskStatusMapper;
 
-    private final TaskRepository taskRepository;
-
     @Override
     @Transactional
     public TaskStatusDTO createTaskStatus(TaskStatusCreateDTO taskStatusCreateDTO) {
-        if (
-                taskStatusRepository.existsBySlug(taskStatusCreateDTO.getSlug())
-                        || taskStatusRepository.existsByName(taskStatusCreateDTO.getName())
-        ) {
-            throw new ConflictException("Task status with given slug or name already exists!");
-        }
         var taskStatus = taskStatusMapper.toEntity(taskStatusCreateDTO);
         var savedTaskStatus = taskStatusRepository.save(taskStatus);
         return taskStatusMapper.toDTO(savedTaskStatus);
@@ -68,9 +58,6 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     public TaskStatusDTO deleteTaskStatus(Long id) {
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task status not found!"));
-        if (taskRepository.existsByTaskStatusId(id)) {
-            throw new ConflictException("Task status is used by tasks!");
-        }
         var taskStatusDTO = taskStatusMapper.toDTO(taskStatus);
         taskStatusRepository.delete(taskStatus);
         return taskStatusDTO;

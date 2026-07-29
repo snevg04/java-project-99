@@ -1,9 +1,8 @@
 package hexlet.code.handler;
 
-import hexlet.code.exception.ConflictException;
-import hexlet.code.exception.LabelInUseException;
 import hexlet.code.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,16 +36,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<String> handleConflictException(ConflictException ex) {
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ex.getMessage());
-    }
-
-    @ExceptionHandler(LabelInUseException.class)
-    public ResponseEntity<String> handleLabelInUseException(LabelInUseException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ex.getMessage());
+                .body("Data integrity violation");
     }
 
     @ExceptionHandler(AuthenticationException.class)
