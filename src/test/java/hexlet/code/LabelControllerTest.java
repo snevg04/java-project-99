@@ -2,9 +2,11 @@ package hexlet.code;
 
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
+import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -44,6 +46,13 @@ class LabelControllerTest {
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
+
+    @BeforeEach
+    void setUp() {
+        taskRepository.deleteAll();
+        labelRepository.deleteAll();
+        taskStatusRepository.deleteAll();
+    }
 
     @Test
     void testIndexLabels() throws Exception {
@@ -137,7 +146,10 @@ class LabelControllerTest {
     @Test
     void testDeleteLabelLinkedToTask() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var status = new TaskStatus();
+        status.setName("TestStatus");
+        status.setSlug("test_status");
+        taskStatusRepository.save(status);
 
         var label = new Label();
         label.setName("label-delete-test");

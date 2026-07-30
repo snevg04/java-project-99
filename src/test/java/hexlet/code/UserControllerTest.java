@@ -5,6 +5,7 @@ import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -21,14 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
-@Transactional
 @WithMockUser(username = "hexlet@example.com")
 class UserControllerTest {
 
@@ -40,6 +39,11 @@ class UserControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
 
     private final Faker faker = new Faker();
 
@@ -113,8 +117,13 @@ class UserControllerTest {
     @Test
     void testUpdateUser() throws Exception {
 
-        var savedUser = userRepository.findByEmail("hexlet@example.com").orElseThrow();
-        var userId = savedUser.getId();
+        var user = new User();
+        user.setFirstName(faker.name().firstName());
+        user.setLastName(faker.name().lastName());
+        user.setEmail("hexlet@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
+        var userId = user.getId();
 
         var payload = new HashMap<String, Object>();
         payload.put("email", faker.internet().emailAddress());
@@ -126,28 +135,32 @@ class UserControllerTest {
                 .andReturn();
 
         assertThatJson(result.getResponse().getContentAsString()).and(
-                json -> json.node("id").isEqualTo(savedUser.getId()),
+                json -> json.node("id").isEqualTo(user.getId()),
                 json -> json.node("email").isEqualTo(payload.get("email")),
                 json -> json.node("password").isAbsent()
         );
 
-        var updatedUser = userRepository.findById(savedUser.getId()).orElseThrow();
+        var updatedUser = userRepository.findById(user.getId()).orElseThrow();
 
         assertThat(updatedUser.getEmail()).isEqualTo(payload.get("email"));
-        assertThat(updatedUser.getFirstName()).isEqualTo(savedUser.getFirstName());
-        assertThat(updatedUser.getLastName()).isEqualTo(savedUser.getLastName());
+        assertThat(updatedUser.getFirstName()).isEqualTo(user.getFirstName());
+        assertThat(updatedUser.getLastName()).isEqualTo(user.getLastName());
     }
 
     @Test
     void testDeleteUser() throws Exception {
 
-        var savedUser = userRepository.findByEmail("hexlet@example.com").orElseThrow();
-        var id = savedUser.getId();
+        var user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("hexlet@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
 
-        mockMvc.perform(delete("/api/users/" + id))
+        mockMvc.perform(delete("/api/users/" + user.getId()))
                 .andExpect(status().isNoContent());
 
-        assertThat(userRepository.findById(id)).isEmpty();
+        assertThat(userRepository.findById(user.getId())).isEmpty();
     }
 
     @Test

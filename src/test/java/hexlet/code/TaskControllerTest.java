@@ -8,6 +8,7 @@ import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -52,6 +53,14 @@ class TaskControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @BeforeEach
+    void setUp() {
+        taskRepository.deleteAll();
+        labelRepository.deleteAll();
+        taskStatusRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
     private Task createTask(String title, User user, TaskStatus status, Label label) {
         Task task = new Task();
         task.setTitle(title);
@@ -65,11 +74,20 @@ class TaskControllerTest {
     @Test
     void testCreateTask() throws Exception {
 
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("bug");
+        labelRepository.save(label);
+
         var payload = new HashMap<String, Object>();
         payload.put("title", "Test task");
         payload.put("content", "desc");
         payload.put("status", "draft");
-        payload.put("taskLabelIds", List.of(1L));
+        payload.put("taskLabelIds", List.of(label.getId()));
 
         var result = mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,6 +106,11 @@ class TaskControllerTest {
 
     @Test
     void testCreateTaskWithoutLabels() throws Exception {
+
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
 
         var payload = new HashMap<String, Object>();
         payload.put("title", "Task without labels");
@@ -111,8 +134,14 @@ class TaskControllerTest {
     @Test
     void testShowTask() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Show task");
@@ -148,8 +177,14 @@ class TaskControllerTest {
     @Test
     void testUpdateTask() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Old name");
@@ -192,8 +227,14 @@ class TaskControllerTest {
     @Test
     void testUpdateWithNonExistentAssigneeId() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Task for assignee test");
@@ -213,8 +254,14 @@ class TaskControllerTest {
     @Test
     void testUpdateWithNonExistentStatus() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Task for status test");
@@ -234,8 +281,14 @@ class TaskControllerTest {
     @Test
     void testUpdateWithNonExistentLabelIds() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Task for label test");
@@ -255,9 +308,21 @@ class TaskControllerTest {
     @Test
     void testUpdateWithNullFieldsPreservesExisting() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
-        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+        var user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
+
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Original title");
@@ -291,8 +356,14 @@ class TaskControllerTest {
     @Test
     void testUpdateLabelsToEmptyList() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
-        var label = labelRepository.findByName("feature").orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("feature");
+        labelRepository.save(label);
 
         var task = new Task();
         task.setTitle("Task with labels");
@@ -320,7 +391,10 @@ class TaskControllerTest {
     @Test
     void testUpdateContentToNull() throws Exception {
 
-        var status = taskStatusRepository.findById(1L).orElseThrow();
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
 
         var task = new Task();
         task.setTitle("Task with content");
@@ -348,10 +422,20 @@ class TaskControllerTest {
     @Test
     void testDeleteTask() throws Exception {
 
-        mockMvc.perform(delete("/api/tasks/1"))
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var task = new Task();
+        task.setTitle("Task to delete");
+        task.setTaskStatus(status);
+        taskRepository.save(task);
+
+        mockMvc.perform(delete("/api/tasks/" + task.getId()))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/tasks/1"))
+        mockMvc.perform(get("/api/tasks/" + task.getId()))
                 .andExpect(status().isNotFound());
     }
 
@@ -383,9 +467,21 @@ class TaskControllerTest {
     @Test
     void testFilterByTitleCont() throws Exception {
 
-        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
-        TaskStatus status = taskStatusRepository.findBySlug("to_be_fixed").orElseThrow();
-        Label label = labelRepository.findByName("bug").orElseThrow();
+        var user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
+
+        var status = new TaskStatus();
+        status.setName("To Be Fixed");
+        status.setSlug("to_be_fixed");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("bug");
+        labelRepository.save(label);
 
         createTask("Create new version", user, status, label);
 
@@ -407,7 +503,23 @@ class TaskControllerTest {
     @Test
     void testFilterByAssigneeId() throws Exception {
 
-        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
+        var user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
+
+        var status = new TaskStatus();
+        status.setName("Draft");
+        status.setSlug("draft");
+        taskStatusRepository.save(status);
+
+        var task = new Task();
+        task.setTitle("Task for assignee");
+        task.setAssignee(user);
+        task.setTaskStatus(status);
+        taskRepository.save(task);
 
         var result = mockMvc.perform(get("/api/tasks")
                         .param("assigneeId", user.getId().toString()))
@@ -430,9 +542,21 @@ class TaskControllerTest {
     @Test
     void testFilterByLabelId() throws Exception {
 
-        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
-        TaskStatus status = taskStatusRepository.findBySlug("to_be_fixed").orElseThrow();
-        Label label = labelRepository.findByName("bug").orElseThrow();
+        var user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
+
+        var status = new TaskStatus();
+        status.setName("To Be Fixed");
+        status.setSlug("to_be_fixed");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("bug");
+        labelRepository.save(label);
 
         createTask("Task with label", user, status, label);
 
@@ -453,11 +577,21 @@ class TaskControllerTest {
     @Test
     void testFilterCombined() throws Exception {
 
-        User user = userRepository.findByEmail("hexlet@example.com").orElseThrow();
-        TaskStatus status = taskStatusRepository.findBySlug("to_be_fixed").orElseThrow();
-        Label label = taskRepository.findById(1L)
-                .flatMap(t -> labelRepository.findByName("bug"))
-                .orElse(labelRepository.findByName("bug").orElseThrow());
+        var user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPasswordDigest("test");
+        userRepository.save(user);
+
+        var status = new TaskStatus();
+        status.setName("To Be Fixed");
+        status.setSlug("to_be_fixed");
+        taskStatusRepository.save(status);
+
+        var label = new Label();
+        label.setName("bug");
+        labelRepository.save(label);
 
         createTask("Create new version", user, status, label);
 
