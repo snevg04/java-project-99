@@ -82,15 +82,22 @@ public class TaskServiceImpl implements TaskService {
 
         taskMapper.updateEntity(dto, task);
 
-        if (dto.isContentUpdated()) {
-            task.setContent(dto.getContent());
+        if (dto.getIndex() != null) {
+            task.setIndex(dto.getIndex().orElse(null));
         }
 
-        if (dto.isAssigneeIdUpdated()) {
-            task.setAssignee(dto.getAssigneeId() != null
-                    ? userRepository.findById(dto.getAssigneeId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!"))
-                    : null);
+        if (dto.getContent() != null) {
+            task.setContent(dto.getContent().orElse(null));
+        }
+
+        if (dto.getAssigneeId() != null) {
+            var newAssigneeId = dto.getAssigneeId().orElse(null);
+            if (newAssigneeId != null) {
+                task.setAssignee(userRepository.findById(newAssigneeId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Assignee not found!")));
+            } else {
+                task.setAssignee(null);
+            }
         }
 
         if (dto.getStatus() != null) {

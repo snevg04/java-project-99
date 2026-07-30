@@ -57,11 +57,11 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
         userMapper.updateEntity(userUpdateDTO, user);
 
-        if (userUpdateDTO.isFirstNameUpdated()) {
-            user.setFirstName(userUpdateDTO.getFirstName());
+        if (userUpdateDTO.getFirstName() != null) {
+            user.setFirstName(userUpdateDTO.getFirstName().orElse(null));
         }
-        if (userUpdateDTO.isLastNameUpdated()) {
-            user.setLastName(userUpdateDTO.getLastName());
+        if (userUpdateDTO.getLastName() != null) {
+            user.setLastName(userUpdateDTO.getLastName().orElse(null));
         }
 
         if (userUpdateDTO.getPassword() != null) {

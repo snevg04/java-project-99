@@ -30,6 +30,8 @@ public interface TaskMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "index", ignore = true)
+    @Mapping(target = "content", ignore = true)
     @Mapping(target = "assignee", ignore = true)
     @Mapping(target = "taskStatus", ignore = true)
     @Mapping(target = "labels", ignore = true)
